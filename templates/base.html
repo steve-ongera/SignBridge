@@ -30,10 +30,9 @@
       --shadow-md:    0 4px 16px rgba(0,0,0,.08);
     }
 
-    /* ─── Base ───────────────────────────────────────────── */
+    /* ─── Reset / Base ───────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
-
     body {
       font-family: 'Outfit', sans-serif;
       background: var(--bg);
@@ -42,10 +41,7 @@
       display: flex;
       flex-direction: column;
     }
-
-    h1, h2, h3, h4, h5, h6, .brand-font {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
+    h1, h2, h3, h4, h5, h6 { font-family: 'Plus Jakarta Sans', sans-serif; }
 
     /* ─── Topbar ─────────────────────────────────────────── */
     .topbar {
@@ -58,91 +54,209 @@
       display: flex;
       align-items: center;
       padding: 0 1.25rem;
-      gap: 1rem;
+      gap: .75rem;
     }
-
     .topbar-brand {
       font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 800;
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       color: var(--text);
       text-decoration: none;
       letter-spacing: -0.4px;
       display: flex;
       align-items: center;
-      gap: .45rem;
-    }
-    .topbar-brand .brand-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--brand);
-      display: inline-block;
+      gap: .4rem;
+      flex-shrink: 0;
     }
     .topbar-brand span { color: var(--brand); }
+    .topbar-brand i { color: var(--brand); font-size: 1.25rem; }
 
-    /* Desktop nav links */
+    /* Desktop nav */
     .topbar-nav {
       display: flex;
       align-items: center;
-      gap: .15rem;
+      gap: .1rem;
       margin-left: auto;
     }
     .topbar-nav a {
       display: flex;
       align-items: center;
       gap: .4rem;
-      padding: .42rem .85rem;
+      padding: .4rem .8rem;
       border-radius: 8px;
       font-size: .875rem;
       font-weight: 500;
       color: var(--text-muted);
       text-decoration: none;
       transition: background .18s, color .18s;
+      white-space: nowrap;
     }
+    .topbar-nav a i { font-size: .95rem; }
     .topbar-nav a:hover,
     .topbar-nav a.active {
       background: var(--brand-subtle);
       color: var(--brand);
     }
-    .topbar-nav a i { font-size: 1rem; }
+    .nav-divider {
+      width: 1px;
+      height: 22px;
+      background: var(--border);
+      margin: 0 .3rem;
+      flex-shrink: 0;
+    }
 
-    /* CTA button in nav */
-    .topbar-nav .btn-nav-cta {
+    /* ── CTA button ── */
+    .btn-nav-cta {
+      background: var(--brand) !important;
+      color: #fff !important;
+      border-radius: 9px !important;
+      font-weight: 600 !important;
+      padding: .42rem 1rem !important;
+      margin-left: .2rem;
+    }
+    .btn-nav-cta:hover { background: var(--brand-dark) !important; }
+
+    /* ── Sign in button ── */
+    .btn-nav-signin {
+      border: 1.5px solid var(--border) !important;
+      border-radius: 9px !important;
+      font-weight: 600 !important;
+    }
+    .btn-nav-signin:hover {
+      border-color: var(--brand) !important;
+      color: var(--brand) !important;
+      background: var(--brand-subtle) !important;
+    }
+
+    /* ── User avatar chip + dropdown ── */
+    .nav-user-wrap {
+      position: relative;
+    }
+    .nav-user-chip {
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+      padding: .3rem .7rem .3rem .35rem;
+      border-radius: 30px;
+      border: 1px solid var(--border);
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--text);
+      background: var(--surface);
+      cursor: pointer;
+      user-select: none;
+      transition: border-color .18s, background .18s;
+    }
+    .nav-user-chip:hover {
+      border-color: var(--brand);
+      background: var(--brand-subtle);
+      color: var(--brand);
+    }
+    .nav-user-chip .u-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
       background: var(--brand);
-      color: #fff !important;
-      margin-left: .4rem;
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .72rem;
+      font-weight: 800;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      flex-shrink: 0;
     }
-    .topbar-nav .btn-nav-cta:hover {
-      background: var(--brand-dark) !important;
-      color: #fff !important;
+    .nav-user-chip .chevron {
+      font-size: .65rem;
+      color: var(--text-muted);
+      transition: transform .2s;
     }
+    .nav-user-chip.open .chevron { transform: rotate(180deg); }
 
-    /* Hamburger toggle (mobile only) */
+    .user-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow-md);
+      min-width: 210px;
+      padding: .4rem;
+      z-index: 2000;
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+    }
+    .nav-user-chip.open .user-dropdown {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all;
+    }
+    .drop-user-info {
+      padding: .55rem .75rem .5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: .3rem;
+    }
+    .drop-user-info .d-name {
+      font-weight: 700; font-size: .875rem;
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .drop-user-info .d-email { font-size: .75rem; color: var(--text-muted); }
+    .drop-item {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      padding: .52rem .75rem;
+      border-radius: 8px;
+      font-size: .845rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      cursor: pointer;
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      transition: background .15s, color .15s;
+    }
+    .drop-item i { font-size: .9rem; width: 1.1rem; text-align: center; }
+    .drop-item:hover { background: var(--bg); color: var(--text); }
+    .drop-item.red { color: #dc2626; }
+    .drop-item.red:hover { background: #fef2f2; color: #b91c1c; }
+    .drop-divider { height: 1px; background: var(--border); margin: .3rem 0; }
+
+    /* ─── Hamburger (mobile) ────────────────────────────── */
     .sidebar-toggle {
       display: none;
       background: none;
       border: none;
-      padding: .35rem .5rem;
+      padding: .3rem .4rem;
       border-radius: 8px;
       color: var(--text);
       cursor: pointer;
       transition: background .15s;
+      flex-shrink: 0;
+      line-height: 1;
     }
-    .sidebar-toggle:hover { background: var(--brand-subtle); }
-    .sidebar-toggle i { font-size: 1.35rem; }
+    .sidebar-toggle:hover { background: var(--brand-subtle); color: var(--brand); }
+    .sidebar-toggle i { font-size: 1.45rem; display: block; }
 
-    /* ─── Drawer Sidebar (mobile) ────────────────────────── */
+    /* ─── Overlay ────────────────────────────────────────── */
     .sidebar-overlay {
-      display: none;
       position: fixed;
       inset: 0;
-      background: rgba(15,23,42,.35);
+      background: rgba(15,23,42,.42);
       z-index: 1040;
       opacity: 0;
-      transition: opacity .25s;
+      visibility: hidden;
+      transition: opacity .25s ease, visibility .25s ease;
     }
-    .sidebar-overlay.open { opacity: 1; }
+    .sidebar-overlay.sb-open {
+      opacity: 1;
+      visibility: visible;
+    }
 
+    /* ─── Drawer ─────────────────────────────────────────── */
     .sidebar-drawer {
       position: fixed;
       top: 0; left: 0;
@@ -154,99 +268,125 @@
       transition: transform .28s cubic-bezier(.4,0,.2,1);
       display: flex;
       flex-direction: column;
-      padding: 0;
       box-shadow: var(--shadow-md);
+      will-change: transform;
     }
-    .sidebar-drawer.open { transform: translateX(0); }
+    .sidebar-drawer.sb-open {
+      transform: translateX(0);
+    }
 
     .sidebar-head {
       height: var(--nav-h);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 1.25rem;
+      padding: 0 1.2rem;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
     .sidebar-close {
       background: none; border: none;
       color: var(--text-muted);
-      cursor: pointer; padding: .3rem;
-      border-radius: 6px; transition: background .15s;
+      cursor: pointer;
+      padding: .4rem;
+      border-radius: 8px;
+      transition: background .15s, color .15s;
+      line-height: 1;
     }
     .sidebar-close:hover { background: var(--brand-subtle); color: var(--brand); }
-    .sidebar-close i { font-size: 1.25rem; }
+    .sidebar-close i { font-size: 1.2rem; display: block; }
 
     .sidebar-nav {
       flex: 1;
       overflow-y: auto;
-      padding: 1rem .75rem;
+      padding: .85rem .7rem;
       display: flex;
       flex-direction: column;
-      gap: .2rem;
+      gap: .15rem;
     }
-    .sidebar-nav a {
+
+    /* Sidebar user card */
+    .sb-user-card {
       display: flex;
       align-items: center;
-      gap: .75rem;
-      padding: .75rem 1rem;
+      gap: .7rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
       border-radius: 10px;
-      font-size: .95rem;
+      padding: .75rem .9rem;
+      margin-bottom: .5rem;
+    }
+    .sb-user-card .sb-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--brand);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem;
+      font-weight: 800;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      flex-shrink: 0;
+    }
+    .sb-user-card .sb-name {
+      font-weight: 700;
+      font-size: .875rem;
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      line-height: 1.2;
+    }
+    .sb-user-card .sb-email { font-size: .72rem; color: var(--text-muted); }
+
+    /* Sidebar nav links */
+    .sb-link {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      padding: .72rem 1rem;
+      border-radius: 10px;
+      font-size: .92rem;
       font-weight: 500;
       color: var(--text-muted);
       text-decoration: none;
       transition: background .18s, color .18s;
+      border: none;
+      background: none;
+      width: 100%;
+      cursor: pointer;
     }
-    .sidebar-nav a i { font-size: 1.1rem; width: 1.25rem; text-align: center; }
-    .sidebar-nav a:hover, .sidebar-nav a.active {
-      background: var(--brand-subtle);
-      color: var(--brand);
+    .sb-link i { font-size: 1.05rem; width: 1.2rem; text-align: center; flex-shrink: 0; }
+    .sb-link:hover, .sb-link.active { background: var(--brand-subtle); color: var(--brand); }
+    .sb-link.sb-cta {
+      background: var(--brand); color: #fff !important;
+      justify-content: center; font-weight: 600;
+      margin-top: .25rem;
     }
-    .sidebar-nav .sidebar-cta {
-      background: var(--brand);
-      color: #fff !important;
-      margin-top: .4rem;
-      justify-content: center;
-    }
-    .sidebar-nav .sidebar-cta:hover { background: var(--brand-dark) !important; }
+    .sb-link.sb-cta:hover { background: var(--brand-dark) !important; }
+    .sb-link.sb-danger { color: #dc2626; }
+    .sb-link.sb-danger:hover { background: #fef2f2 !important; color: #b91c1c !important; }
+    .sb-divider { height: 1px; background: var(--border); margin: .4rem 0; }
 
     .sidebar-footer {
-      padding: 1rem 1.25rem;
+      padding: .9rem 1.2rem;
       border-top: 1px solid var(--border);
-      font-size: .78rem;
-      color: var(--text-muted);
+      flex-shrink: 0;
     }
+    .sidebar-footer p { font-size: .75rem; color: var(--text-muted); margin: 0; line-height: 1.5; }
 
-    /* ─── Content wrapper ────────────────────────────────── */
+    /* ─── Misc ───────────────────────────────────────────── */
     .page-body { flex: 1; }
-
-    /* ─── Cards ──────────────────────────────────────────── */
     .card {
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow-sm);
       background: var(--surface);
     }
-
-    /* ─── Buttons ────────────────────────────────────────── */
-    .btn-brand {
-      background: var(--brand);
-      color: #fff;
-      border: none;
-      font-weight: 600;
-      border-radius: 10px;
-    }
+    .btn-brand { background: var(--brand); color: #fff; border: none; font-weight: 600; border-radius: 10px; }
     .btn-brand:hover { background: var(--brand-dark); color: #fff; }
     .btn-outline-brand {
-      border: 1.5px solid var(--brand);
-      color: var(--brand);
-      background: transparent;
-      font-weight: 600;
-      border-radius: 10px;
+      border: 1.5px solid var(--brand); color: var(--brand);
+      background: transparent; font-weight: 600; border-radius: 10px;
     }
     .btn-outline-brand:hover { background: var(--brand); color: #fff; }
-
-    /* ─── Toast / Alerts ─────────────────────────────────── */
     .alert-wrap { padding: .75rem 1.25rem 0; }
 
     /* ─── Footer ─────────────────────────────────────────── */
@@ -258,21 +398,21 @@
     }
     footer .footer-brand {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      font-weight: 800;
-      color: #fff;
-      font-size: 1.1rem;
+      font-weight: 800; color: #fff; font-size: 1.1rem;
     }
     footer a { color: #94a3b8; text-decoration: none; transition: color .15s; }
     footer a:hover { color: #fff; }
-    footer .footer-divider {
-      border-color: rgba(255,255,255,.1);
+    .footer-divider { border-color: rgba(255,255,255,.1); }
+    .footer-col-title {
+      font-size: .72rem; font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+      color: #fff; margin-bottom: .6rem;
     }
 
     /* ─── Responsive ─────────────────────────────────────── */
     @media (max-width: 991.98px) {
       .topbar-nav { display: none; }
       .sidebar-toggle { display: flex; align-items: center; justify-content: center; }
-      .sidebar-overlay { display: block; }
     }
   </style>
 
@@ -280,21 +420,21 @@
 </head>
 <body>
 
-  <!-- ═══ Topbar ═══════════════════════════════════════════ -->
+  <!-- ═══ TOPBAR ═══════════════════════════════════════════ -->
   <header class="topbar">
-    <!-- Mobile hamburger -->
-    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Open menu">
+
+    <!-- Hamburger (shown only on mobile via CSS) -->
+    <button class="sidebar-toggle" id="sbToggle" aria-label="Open menu" aria-expanded="false" aria-controls="sidebarDrawer">
       <i class="bi bi-list"></i>
     </button>
 
     <!-- Brand -->
     <a class="topbar-brand" href="{% url 'home' %}">
-      <i class="bi bi-hand-index-thumb-fill" style="color:var(--brand);font-size:1.3rem;"></i>
-      Sign<span>Bridge</span>
+      <i class="bi bi-hand-index-thumb-fill"></i>Sign<span>Bridge</span>
     </a>
 
-    <!-- Desktop nav -->
-    <nav class="topbar-nav">
+    <!-- Desktop navigation -->
+    <nav class="topbar-nav" aria-label="Main navigation">
       <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
         <i class="bi bi-house"></i>Home
       </a>
@@ -307,52 +447,121 @@
       <a href="{% url 'about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">
         <i class="bi bi-info-circle"></i>About
       </a>
-      <a href="{% url 'translator' %}" class="btn-nav-cta">
-        <i class="bi bi-play-circle-fill"></i>Start
-      </a>
+
+      <div class="nav-divider"></div>
+
+      {% if user.is_authenticated %}
+        <!-- Authenticated: avatar chip with dropdown -->
+        <div class="nav-user-wrap">
+          <div class="nav-user-chip" id="userChip" tabindex="0"
+               role="button" aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
+            <div class="u-avatar" aria-hidden="true">
+              {{ user.first_name|first|upper|default:user.username|first|upper }}
+            </div>
+            <span>{{ user.first_name|default:user.username }}</span>
+            <i class="bi bi-chevron-down chevron" aria-hidden="true"></i>
+
+            <div class="user-dropdown" role="menu">
+              <div class="drop-user-info">
+                <div class="d-name">{{ user.get_full_name|default:user.username }}</div>
+                <div class="d-email">{{ user.email }}</div>
+              </div>
+              <a href="{% url 'history' %}" class="drop-item" role="menuitem">
+                <i class="bi bi-clock-history"></i>My History
+              </a>
+              <a href="{% url 'translator' %}" class="drop-item" role="menuitem">
+                <i class="bi bi-camera-video"></i>New Session
+              </a>
+              <div class="drop-divider"></div>
+              <a href="{% url 'logout' %}" class="drop-item red" role="menuitem">
+                <i class="bi bi-box-arrow-right"></i>Sign Out
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <a href="{% url 'translator' %}" class="btn-nav-cta">
+          <i class="bi bi-play-circle-fill"></i>Start
+        </a>
+
+      {% else %}
+        <!-- Guest: sign in + register -->
+        <a href="{% url 'login' %}" class="btn-nav-signin
+           {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
+          <i class="bi bi-box-arrow-in-right"></i>Sign In
+        </a>
+        <a href="{% url 'login' %}?tab=register" class="btn-nav-cta">
+          <i class="bi bi-person-plus"></i>Register
+        </a>
+      {% endif %}
     </nav>
   </header>
 
-  <!-- ═══ Sidebar Overlay ═══════════════════════════════════ -->
-  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <!-- ═══ SIDEBAR OVERLAY ══════════════════════════════════ -->
+  <div class="sidebar-overlay" id="sbOverlay" aria-hidden="true"></div>
 
-  <!-- ═══ Drawer Sidebar ════════════════════════════════════ -->
-  <aside class="sidebar-drawer" id="sidebarDrawer" aria-label="Navigation">
+  <!-- ═══ DRAWER SIDEBAR ═══════════════════════════════════ -->
+  <aside class="sidebar-drawer" id="sidebarDrawer" aria-label="Mobile navigation" aria-hidden="true">
+
     <div class="sidebar-head">
-      <a class="topbar-brand" href="{% url 'home' %}" onclick="closeSidebar()">
-        <i class="bi bi-hand-index-thumb-fill" style="color:var(--brand);font-size:1.2rem;"></i>
-        Sign<span>Bridge</span>
+      <a class="topbar-brand" href="{% url 'home' %}" id="sbBrandLink">
+        <i class="bi bi-hand-index-thumb-fill"></i>Sign<span>Bridge</span>
       </a>
-      <button class="sidebar-close" onclick="closeSidebar()" aria-label="Close menu">
+      <button class="sidebar-close" id="sbClose" aria-label="Close menu">
         <i class="bi bi-x-lg"></i>
       </button>
     </div>
 
-    <nav class="sidebar-nav">
-      <a href="{% url 'home' %}" onclick="closeSidebar()" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+    <nav class="sidebar-nav" aria-label="Mobile navigation">
+      {% if user.is_authenticated %}
+      <div class="sb-user-card">
+        <div class="sb-avatar">{{ user.first_name|first|upper|default:user.username|first|upper }}</div>
+        <div>
+          <div class="sb-name">{{ user.get_full_name|default:user.username }}</div>
+          <div class="sb-email">{{ user.email }}</div>
+        </div>
+      </div>
+      {% endif %}
+
+      <a href="{% url 'home' %}" class="sb-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
         <i class="bi bi-house"></i>Home
       </a>
-      <a href="{% url 'translator' %}" onclick="closeSidebar()" class="{% if request.resolver_match.url_name == 'translator' %}active{% endif %}">
+      <a href="{% url 'translator' %}" class="sb-link {% if request.resolver_match.url_name == 'translator' %}active{% endif %}">
         <i class="bi bi-camera-video"></i>Translate
       </a>
-      <a href="{% url 'history' %}" onclick="closeSidebar()" class="{% if request.resolver_match.url_name == 'history' %}active{% endif %}">
+      <a href="{% url 'history' %}" class="sb-link {% if request.resolver_match.url_name == 'history' %}active{% endif %}">
         <i class="bi bi-clock-history"></i>History
       </a>
-      <a href="{% url 'about' %}" onclick="closeSidebar()" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">
+      <a href="{% url 'about' %}" class="sb-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
         <i class="bi bi-info-circle"></i>About
       </a>
-      <a href="{% url 'translator' %}" class="sidebar-cta" onclick="closeSidebar()">
-        <i class="bi bi-play-circle-fill me-1"></i>Start Translating
-      </a>
+
+      <div class="sb-divider"></div>
+
+      {% if user.is_authenticated %}
+        <a href="{% url 'translator' %}" class="sb-link sb-cta">
+          <i class="bi bi-play-circle-fill"></i>Start Translating
+        </a>
+        <a href="{% url 'logout' %}" class="sb-link sb-danger">
+          <i class="bi bi-box-arrow-right"></i>Sign Out
+        </a>
+      {% else %}
+        <a href="{% url 'login' %}" class="sb-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
+          <i class="bi bi-box-arrow-in-right"></i>Sign In
+        </a>
+        <a href="{% url 'login' %}?tab=register" class="sb-link sb-cta">
+          <i class="bi bi-person-plus"></i>Create Free Account
+        </a>
+      {% endif %}
     </nav>
 
     <div class="sidebar-footer">
-      <p class="mb-0">© 2025 SignBridge</p>
-      <p class="mb-0 mt-1" style="font-size:.72rem;">Powered by Gemini AI</p>
+      <p>© 2025 SignBridge</p>
+      <p style="opacity:.55; font-size:.7rem; margin-top:.15rem;">Powered by Gemini AI</p>
     </div>
   </aside>
 
-  <!-- ═══ Alerts ════════════════════════════════════════════ -->
+  <!-- ═══ ALERTS ════════════════════════════════════════════ -->
   {% if messages %}
   <div class="alert-wrap">
     {% for m in messages %}
@@ -364,12 +573,10 @@
   </div>
   {% endif %}
 
-  <!-- ═══ Page Content ══════════════════════════════════════ -->
-  <main class="page-body">
-    {% block content %}{% endblock %}
-  </main>
+  <!-- ═══ PAGE CONTENT ══════════════════════════════════════ -->
+  <main class="page-body">{% block content %}{% endblock %}</main>
 
-  <!-- ═══ Footer ════════════════════════════════════════════ -->
+  <!-- ═══ FOOTER ════════════════════════════════════════════ -->
   <footer>
     <div class="container">
       <div class="row gy-4 align-items-start">
@@ -377,12 +584,12 @@
           <p class="footer-brand mb-2">
             <i class="bi bi-hand-index-thumb-fill me-1" style="color:var(--accent)"></i>SignBridge
           </p>
-          <p style="font-size:.85rem; line-height:1.6;">
+          <p style="font-size:.85rem; line-height:1.65;">
             Real-time sign language to voice translation — making communication accessible for everyone.
           </p>
         </div>
         <div class="col-6 col-md-2">
-          <p class="text-white fw-600 mb-2" style="font-size:.82rem; font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; letter-spacing:.04em; text-transform:uppercase;">Navigate</p>
+          <p class="footer-col-title">Navigate</p>
           <div class="d-flex flex-column gap-1" style="font-size:.85rem;">
             <a href="{% url 'home' %}">Home</a>
             <a href="{% url 'translator' %}">Translate</a>
@@ -391,7 +598,7 @@
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <p class="text-white fw-600 mb-2" style="font-size:.82rem; font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; letter-spacing:.04em; text-transform:uppercase;">Technology</p>
+          <p class="footer-col-title">Technology</p>
           <div class="d-flex flex-column gap-1" style="font-size:.85rem;">
             <span>Django 4.2</span>
             <span>Google Gemini Vision</span>
@@ -400,10 +607,17 @@
           </div>
         </div>
         <div class="col-md-3">
-          <p class="text-white fw-600 mb-2" style="font-size:.82rem; font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; letter-spacing:.04em; text-transform:uppercase;">Mission</p>
-          <p style="font-size:.85rem; line-height:1.6;">
-            Bridging communication gaps for the 70 million people worldwide who use sign language.
-          </p>
+          <p class="footer-col-title">Account</p>
+          <div class="d-flex flex-column gap-1" style="font-size:.85rem;">
+            {% if user.is_authenticated %}
+            <a href="{% url 'history' %}">My History</a>
+            <a href="{% url 'translator' %}">New Session</a>
+            <a href="{% url 'logout' %}">Sign Out</a>
+            {% else %}
+            <a href="{% url 'login' %}">Sign In</a>
+            <a href="{% url 'login' %}?tab=register">Create Account</a>
+            {% endif %}
+          </div>
         </div>
       </div>
       <hr class="footer-divider mt-4 mb-3"/>
@@ -414,28 +628,97 @@
   </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-
   <script>
-    const toggle   = document.getElementById('sidebarToggle');
-    const overlay  = document.getElementById('sidebarOverlay');
-    const drawer   = document.getElementById('sidebarDrawer');
+  /* ═══════════════════════════════════════════════════════════
+     SIDEBAR — uses class sb-open so CSS transition fires cleanly
+  ═══════════════════════════════════════════════════════════ */
+  (function () {
+    var toggle  = document.getElementById('sbToggle');
+    var overlay = document.getElementById('sbOverlay');
+    var drawer  = document.getElementById('sidebarDrawer');
+    var closeBtn = document.getElementById('sbClose');
+    var isOpen  = false;
 
     function openSidebar() {
-      drawer.classList.add('open');
-      overlay.classList.add('open');
+      if (isOpen) return;
+      isOpen = true;
+      drawer.classList.add('sb-open');
+      overlay.classList.add('sb-open');
       document.body.style.overflow = 'hidden';
+      toggle.setAttribute('aria-expanded', 'true');
+      drawer.setAttribute('aria-hidden', 'false');
+      overlay.setAttribute('aria-hidden', 'false');
+      // Focus first focusable element inside drawer
+      var first = drawer.querySelector('a, button');
+      if (first) setTimeout(function(){ first.focus(); }, 50);
     }
+
     function closeSidebar() {
-      drawer.classList.remove('open');
-      overlay.classList.remove('open');
+      if (!isOpen) return;
+      isOpen = false;
+      drawer.classList.remove('sb-open');
+      overlay.classList.remove('sb-open');
       document.body.style.overflow = '';
+      toggle.setAttribute('aria-expanded', 'false');
+      drawer.setAttribute('aria-hidden', 'true');
+      overlay.setAttribute('aria-hidden', 'true');
+      toggle.focus();
     }
 
     toggle.addEventListener('click', openSidebar);
+    closeBtn.addEventListener('click', closeSidebar);
     overlay.addEventListener('click', closeSidebar);
 
     // Close on Escape
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && isOpen) closeSidebar();
+    });
+
+    // Close when any sb-link inside drawer is tapped
+    drawer.querySelectorAll('.sb-link').forEach(function (link) {
+      link.addEventListener('click', closeSidebar);
+    });
+
+    // Brand link inside drawer
+    var sbBrand = document.getElementById('sbBrandLink');
+    if (sbBrand) sbBrand.addEventListener('click', closeSidebar);
+
+    // On desktop resize — reset state
+    window.addEventListener('resize', function () {
+      if (window.innerWidth >= 992 && isOpen) closeSidebar();
+    });
+  })();
+
+  /* ═══════════════════════════════════════════════════════════
+     USER DROPDOWN (desktop topbar)
+  ═══════════════════════════════════════════════════════════ */
+  (function () {
+    var chip = document.getElementById('userChip');
+    if (!chip) return;
+
+    function open()  { chip.classList.add('open');    chip.setAttribute('aria-expanded','true');  }
+    function close() { chip.classList.remove('open'); chip.setAttribute('aria-expanded','false'); }
+
+    chip.addEventListener('click', function (e) {
+      e.stopPropagation();
+      chip.classList.contains('open') ? close() : open();
+    });
+    chip.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ')  { e.preventDefault(); chip.classList.contains('open') ? close() : open(); }
+      if (e.key === 'Escape') close();
+    });
+    document.addEventListener('click', function () { close(); });
+  })();
+
+  /* ═══════════════════════════════════════════════════════════
+     AUTO-SWITCH AUTH TAB if URL has ?tab=register
+  ═══════════════════════════════════════════════════════════ */
+  (function () {
+    if (typeof switchTab === 'function') {
+      var p = new URLSearchParams(window.location.search);
+      if (p.get('tab') === 'register') switchTab('register');
+    }
+  })();
   </script>
 
   {% block extra_js %}{% endblock %}

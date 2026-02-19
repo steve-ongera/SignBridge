@@ -250,3 +250,87 @@ def history(request):
 
 def about(request):
     return render(request, 'about.html')
+
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+
+# ─────────────────────────────────────────────────────────────
+# ADD THESE VIEWS to views.py
+# ─────────────────────────────────────────────────────────────
+
+def auth_view(request):
+    """Single page for both login and register (tab-switched via JS)."""
+    if request.user.is_authenticated:
+        return redirect('home')
+
+    login_error = None
+    register_errors = []
+    form_type = 'login'
+
+    if request.method == 'POST':
+        form_type = request.POST.get('form_type', 'login')
+
+        # ── LOGIN ──────────────────────────────────────────
+        if form_type == 'login':
+            username = request.POST.get('username', '').strip()
+            password = request.POST.get('password', '')
+            user = authenticate(request, username=username, password=password)
+
+            if user is not None:
+                login(request, user)
+                messages.success(request, f'Welcome back, {user.first_name or user.username}!')
+                next_url = request.GET.get('next', 'home')
+                return redirect(next_url)
+            else:
+                login_error = 'Invalid username or password. Please try again.'
+
+        # ── REGISTER ───────────────────────────────────────
+        elif form_type == 'register':
+            first_name = request.POST.get('first_name', '').strip()
+            last_name  = request.POST.get('last_name', '').strip()
+            username   = request.POST.get('username', '').strip()
+            email      = request.POST.get('email', '').strip()
+            password1  = request.POST.get('password1', '')
+            password2  = request.POST.get('password2', '')
+            role       = request.POST.get('role', 'hearing')
+            agree      = request.POST.get('agree_terms')
+
+            # Validate
+            if not agree:
+                register_errors.append('You must agree to the Terms of Service.')
+            if not username:
+                register_errors.append('Username is required.')
+            elif User.objects.filter(username=username).exists():
+                register_errors.append('That username is already taken.')
+            if email and User.objects.filter(email=email).exists():
+                register_errors.append('An account with that email already exists.')
+            if len(password1) < 8:
+                register_errors.append('Password must be at least 8 characters.')
+            if password1 != password2:
+                register_errors.append('Passwords do not match.')
+
+            if not register_errors:
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password1,
+                    first_name=first_name,
+                    last_name=last_name,
+                )
+                # Create UserProfile
+                UserProfile.objects.create(user=user, role=role)
+                login(request, user)
+                messages.success(request, f'Welcome to SignBridge, {first_name or username}! 🎉')
+                return redirect('home')
+
+    return render(request, 'auth.html', {
+        'login_error':      login_error,
+        'register_errors':  register_errors,
+        'form_type':        form_type,
+    })
+
+
+def logout_view(request):
+    logout(request)
+    messages.info(request, 'You have been signed out.')
+    return redirect('home')

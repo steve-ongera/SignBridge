@@ -1,61 +1,413 @@
 {% extends 'base.html' %}
 {% block title %}SignBridge — My History{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Page header ────────────────────────────────── */
+  .page-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 2.25rem 0 2rem;
+  }
+  .section-label {
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--brand);
+    margin-bottom: .3rem;
+  }
+  .page-title {
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--text);
+    margin-bottom: 0;
+  }
+
+  /* ── Summary strip ──────────────────────────────── */
+  .history-summary {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+  }
+  .summary-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: .3rem .85rem;
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  .summary-chip i { color: var(--brand); }
+
+  /* ── Session card ───────────────────────────────── */
+  .session-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: box-shadow .2s;
+  }
+  .session-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+
+  .session-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .session-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: .25rem;
+    flex-wrap: wrap;
+  }
+  .session-meta {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    flex-wrap: wrap;
+  }
+  .meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: .78rem;
+    color: var(--text-muted);
+  }
+  .meta-item i { font-size: .8rem; }
+
+  /* Status badges */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: .72rem;
+    font-weight: 700;
+    padding: .2rem .65rem;
+    border-radius: 20px;
+    letter-spacing: .02em;
+  }
+  .status-pill.completed { background: #dcfce7; color: #15803d; }
+  .status-pill.active    { background: #fef9c3; color: #a16207; }
+  .status-pill.failed    { background: #fee2e2; color: #b91c1c; }
+  .status-pill i         { font-size: .7rem; }
+
+  /* Count badge */
+  .count-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: .25rem .75rem;
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .count-badge i { color: var(--brand); }
+
+  /* ── Records list ───────────────────────────────── */
+  .records-body { padding: .5rem 0; }
+
+  .record-row {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    padding: .65rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    transition: background .15s;
+  }
+  .record-row:last-child { border-bottom: none; }
+  .record-row:hover { background: var(--bg); }
+
+  /* Thumbnail */
+  .record-thumb {
+    width: 44px;
+    height: 44px;
+    border-radius: 9px;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .record-thumb-placeholder {
+    width: 44px;
+    height: 44px;
+    border-radius: 9px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    font-size: .95rem;
+  }
+
+  /* Sign chip */
+  .sign-chip {
+    background: var(--brand-subtle);
+    color: var(--brand);
+    border: 1px solid rgba(37,99,235,.15);
+    border-radius: 7px;
+    padding: .2rem .6rem;
+    font-size: .78rem;
+    font-weight: 700;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .record-arrow { color: var(--text-muted); font-size: .75rem; flex-shrink: 0; }
+
+  .record-text {
+    flex: 1;
+    font-size: .875rem;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Confidence pill */
+  .conf-pill {
+    font-size: .72rem;
+    font-weight: 700;
+    padding: .2rem .55rem;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .conf-high   { background: #dcfce7; color: #15803d; }
+  .conf-medium { background: #fef9c3; color: #a16207; }
+  .conf-low    { background: #fee2e2; color: #b91c1c; }
+
+  /* ── Empty session ──────────────────────────────── */
+  .records-empty {
+    padding: 1.1rem 1.25rem;
+    font-size: .85rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  /* ── Show more ──────────────────────────────────── */
+  .more-badge {
+    margin: .5rem 1.25rem .75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: .78rem;
+    color: var(--text-muted);
+    background: var(--bg);
+    border: 1px dashed var(--border);
+    border-radius: 20px;
+    padding: .25rem .8rem;
+  }
+
+  /* ── Empty state (no sessions at all) ───────────── */
+  .empty-state {
+    text-align: center;
+    padding: 5rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .empty-icon-wrap {
+    width: 72px; height: 72px;
+    background: var(--brand-subtle);
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+    color: var(--brand);
+    margin: 0 auto 1.25rem;
+  }
+  .empty-state h4 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    color: var(--text);
+    font-size: 1.15rem;
+    margin-bottom: .4rem;
+  }
+  .empty-state p {
+    color: var(--text-muted);
+    font-size: .9rem;
+    margin-bottom: 1.5rem;
+  }
+  .btn-start {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: .7rem 1.6rem;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: .9rem;
+    text-decoration: none;
+    transition: background .2s, transform .15s;
+  }
+  .btn-start:hover {
+    background: var(--brand-dark);
+    color: #fff;
+    transform: translateY(-1px);
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-  <h2 class="fw-bold mb-4"><i class="fa fa-history me-2" style="color:#4f46e5"></i>Translation History</h2>
+
+<!-- ═══ PAGE HEADER ══════════════════════════════════════════ -->
+<div class="page-header">
+  <div class="container">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
+      <div>
+        <p class="section-label mb-1"><i class="bi bi-clock-history me-1"></i>Account</p>
+        <h1 class="page-title">Translation History</h1>
+      </div>
+      {% if sessions %}
+      <div class="history-summary align-self-end">
+        <span class="summary-chip">
+          <i class="bi bi-collection"></i>{{ sessions|length }} session{{ sessions|length|pluralize }}
+        </span>
+        <a href="{% url 'translator' %}" class="btn btn-brand btn-sm d-inline-flex align-items-center gap-1"
+           style="border-radius:9px; font-size:.825rem; font-weight:600; padding:.45rem 1rem;">
+          <i class="bi bi-plus-lg"></i>New Session
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CONTENT ══════════════════════════════════════════════ -->
+<div class="container py-4" style="max-width:860px">
 
   {% for session in sessions %}
-  <div class="card mb-4 p-4">
-    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+  <div class="session-card mb-3">
+
+    <!-- Session header -->
+    <div class="session-header">
       <div>
-        <h6 class="fw-bold mb-1">Session #{{ session.pk }}
-          <span class="badge ms-1
-            {% if session.status == 'completed' %}bg-success
-            {% elif session.status == 'active' %}bg-warning text-dark
-            {% else %}bg-danger{% endif %}">
-            {{ session.get_status_display }}
+        <div class="session-title">
+          <i class="bi bi-record-circle" style="color:var(--brand); font-size:.9rem;"></i>
+          Session #{{ session.pk }}
+
+          {% if session.status == 'completed' %}
+          <span class="status-pill completed"><i class="bi bi-check-circle-fill"></i>Completed</span>
+          {% elif session.status == 'active' %}
+          <span class="status-pill active"><i class="bi bi-circle-fill"></i>Active</span>
+          {% else %}
+          <span class="status-pill failed"><i class="bi bi-x-circle-fill"></i>Failed</span>
+          {% endif %}
+        </div>
+
+        <div class="session-meta">
+          <span class="meta-item">
+            <i class="bi bi-calendar3"></i>
+            {{ session.started_at|date:"d M Y" }}
           </span>
-        </h6>
-        <small class="text-muted">
-          <i class="fa fa-calendar me-1"></i>{{ session.started_at|date:"d M Y, H:i" }}
-          {% if session.sign_language %} — {{ session.sign_language.name }}{% endif %}
-        </small>
+          <span class="meta-item">
+            <i class="bi bi-clock"></i>
+            {{ session.started_at|date:"H:i" }}
+          </span>
+          {% if session.sign_language %}
+          <span class="meta-item">
+            <i class="bi bi-translate"></i>
+            {{ session.sign_language.name }}
+          </span>
+          {% endif %}
+        </div>
       </div>
-      <span class="badge bg-light text-dark border">{{ session.records.count }} translations</span>
+
+      <span class="count-badge">
+        <i class="bi bi-hand-index-thumb"></i>
+        {{ session.records.count }} translation{{ session.records.count|pluralize }}
+      </span>
     </div>
 
+    <!-- Records -->
     {% if session.records.all %}
-    <div class="mt-3">
-      {% for record in session.records.all|slice:":10" %}
-      <div class="d-flex align-items-center gap-3 py-2 border-bottom">
+    <div class="records-body">
+      {% for record in session.records.all|slice:":8" %}
+      <div class="record-row">
+
         {% if record.frame_image %}
-        <img src="{{ record.frame_image.url }}" width="48" height="48"
-             style="object-fit:cover; border-radius:8px; border:2px solid #e5e7eb"/>
+        <img src="{{ record.frame_image.url }}" class="record-thumb" alt="Frame"/>
         {% else %}
-        <div style="width:48px;height:48px;background:#f1f5f9;border-radius:8px;display:flex;align-items:center;justify-content:center;">
-          <i class="fa fa-hand-paper text-muted"></i>
+        <div class="record-thumb-placeholder">
+          <i class="bi bi-hand-index-thumb"></i>
         </div>
         {% endif %}
-        <div class="flex-grow-1">
-          <strong>{{ record.detected_sign }}</strong>
-          <span class="text-muted mx-1">→</span>
-          {{ record.translated_text }}
-        </div>
-        <span class="badge {% if record.confidence_score >= 0.8 %}bg-success{% elif record.confidence_score >= 0.5 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
-          {{ record.confidence_score|floatformat:0 }}%… wait, {{ record.confidence_score|stringformat:".0%" }}
+
+        <span class="sign-chip">{{ record.detected_sign }}</span>
+        <i class="bi bi-arrow-right record-arrow"></i>
+        <span class="record-text">{{ record.translated_text }}</span>
+
+        {% with score=record.confidence_score %}
+        <span class="conf-pill
+          {% if score >= 0.8 %}conf-high
+          {% elif score >= 0.5 %}conf-medium
+          {% else %}conf-low{% endif %}">
+          {% widthratio score 1 100 %}%
         </span>
+        {% endwith %}
+
       </div>
       {% endfor %}
+
+      {% if session.records.count > 8 %}
+      <div>
+        <span class="more-badge">
+          <i class="bi bi-three-dots"></i>
+          {{ session.records.count|add:"-8" }} more translation{{ session.records.count|add:"-8"|pluralize }} not shown
+        </span>
+      </div>
+      {% endif %}
     </div>
+
     {% else %}
-    <p class="text-muted mt-2 mb-0 small">No translations recorded in this session.</p>
+    <div class="records-empty">
+      <i class="bi bi-slash-circle" style="color:var(--text-muted);"></i>
+      No translations were recorded in this session.
+    </div>
     {% endif %}
+
   </div>
   {% empty %}
-  <div class="text-center py-5">
-    <div style="font-size:3rem">🤟</div>
-    <p class="text-muted mt-3">No sessions yet. <a href="{% url 'translator' %}">Start your first translation!</a></p>
+
+  <!-- Empty state -->
+  <div class="empty-state">
+    <div class="empty-icon-wrap">
+      <i class="bi bi-hand-index-thumb"></i>
+    </div>
+    <h4>No sessions yet</h4>
+    <p>Your translation history will appear here after you complete a session.</p>
+    <a href="{% url 'translator' %}" class="btn-start">
+      <i class="bi bi-camera-video-fill"></i>Start Your First Translation
+    </a>
   </div>
+
   {% endfor %}
+
 </div>
 {% endblock %}

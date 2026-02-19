@@ -1,0 +1,679 @@
+{% extends 'base.html' %}
+{% block title %}SignBridge — Sign In{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Page shell ─────────────────────────────────── */
+  .auth-page {
+    min-height: calc(100vh - var(--nav-h));
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* ── Left panel (branding) ──────────────────────── */
+  .auth-left {
+    background: var(--text);
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+  .auth-left::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 60% at 20% 80%, rgba(37,99,235,.35) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 80% 10%, rgba(14,165,233,.2) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .auth-left-content { position: relative; z-index: 1; }
+
+  .auth-brand {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: #fff;
+    text-decoration: none;
+    margin-bottom: 3rem;
+  }
+  .auth-brand i { color: var(--accent); font-size: 1.35rem; }
+  .auth-brand span { color: #60a5fa; }
+
+  .auth-tagline {
+    color: #fff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+  }
+  .auth-tagline span { color: #60a5fa; }
+  .auth-sub {
+    color: #94a3b8;
+    font-size: .9rem;
+    line-height: 1.7;
+    max-width: 340px;
+  }
+
+  .auth-features {
+    list-style: none;
+    padding: 0; margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+  }
+  .auth-features li {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    color: #cbd5e1;
+    font-size: .875rem;
+  }
+  .auth-features li i {
+    width: 32px; height: 32px;
+    background: rgba(255,255,255,.08);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #60a5fa;
+    font-size: .95rem;
+    flex-shrink: 0;
+  }
+
+  .auth-footer-note {
+    color: #475569;
+    font-size: .78rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Right panel (form) ─────────────────────────── */
+  .auth-right {
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1.5rem;
+  }
+  .auth-box {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  /* ── Tab switcher ───────────────────────────────── */
+  .auth-tabs {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 1.75rem;
+    gap: 4px;
+  }
+  .auth-tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: .6rem 1rem;
+    border-radius: 9px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: .875rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background .2s, color .2s, box-shadow .2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+  }
+  .auth-tab-btn.active {
+    background: var(--brand);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(37,99,235,.25);
+  }
+  .auth-tab-btn:not(.active):hover {
+    background: var(--brand-subtle);
+    color: var(--brand);
+  }
+
+  /* ── Form panels ────────────────────────────────── */
+  .auth-panel { display: none; }
+  .auth-panel.active { display: block; animation: fadeUp .25s ease; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .auth-panel-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.025em;
+    margin-bottom: .3rem;
+  }
+  .auth-panel-sub {
+    font-size: .85rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+
+  /* ── Form elements ──────────────────────────────── */
+  .form-field { margin-bottom: 1rem; }
+  .form-label {
+    display: block;
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: .35rem;
+    letter-spacing: .01em;
+  }
+  .input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .input-wrap i {
+    position: absolute;
+    left: .85rem;
+    color: var(--text-muted);
+    font-size: .95rem;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .input-wrap input {
+    width: 100%;
+    padding: .65rem .9rem .65rem 2.4rem;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-size: .9rem;
+    font-family: 'Outfit', sans-serif;
+    color: var(--text);
+    background: var(--surface);
+    transition: border-color .18s, box-shadow .18s;
+    outline: none;
+  }
+  .input-wrap input:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+  }
+  .input-wrap input::placeholder { color: #a0aec0; }
+
+  /* Password toggle */
+  .pwd-toggle {
+    position: absolute;
+    right: .85rem;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0;
+    font-size: .95rem;
+    z-index: 2;
+    transition: color .15s;
+  }
+  .pwd-toggle:hover { color: var(--brand); }
+
+  /* Role select */
+  .role-select {
+    width: 100%;
+    padding: .65rem .9rem .65rem 2.4rem;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-size: .9rem;
+    font-family: 'Outfit', sans-serif;
+    color: var(--text);
+    background: var(--surface);
+    appearance: none;
+    transition: border-color .18s, box-shadow .18s;
+    outline: none;
+    cursor: pointer;
+  }
+  .role-select:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+  }
+
+  /* Strength bar */
+  .strength-wrap { margin-top: .45rem; }
+  .strength-track {
+    height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: .3rem;
+  }
+  .strength-bar {
+    height: 100%;
+    border-radius: 4px;
+    width: 0%;
+    transition: width .3s ease, background .3s;
+  }
+  .strength-label { font-size: .72rem; color: var(--text-muted); }
+
+  /* Checkbox */
+  .check-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    font-size: .82rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .check-wrap input[type="checkbox"] {
+    width: 16px; height: 16px;
+    flex-shrink: 0;
+    margin-top: .1rem;
+    accent-color: var(--brand);
+    cursor: pointer;
+  }
+  .check-wrap a { color: var(--brand); font-weight: 600; text-decoration: none; }
+  .check-wrap a:hover { text-decoration: underline; }
+
+  /* Submit button */
+  .btn-auth {
+    width: 100%;
+    padding: .75rem 1.5rem;
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: .95rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    transition: background .2s, transform .15s, box-shadow .2s;
+    margin-top: 1.25rem;
+    box-shadow: 0 2px 8px rgba(37,99,235,.2);
+  }
+  .btn-auth:hover {
+    background: var(--brand-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(37,99,235,.3);
+  }
+  .btn-auth:active { transform: translateY(0); }
+
+  /* Divider */
+  .form-divider {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin: 1.25rem 0;
+    font-size: .78rem;
+    color: var(--text-muted);
+  }
+  .form-divider::before,
+  .form-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Forgot link */
+  .forgot-link {
+    font-size: .8rem;
+    color: var(--brand);
+    font-weight: 600;
+    text-decoration: none;
+    float: right;
+    margin-top: -.5rem;
+  }
+  .forgot-link:hover { text-decoration: underline; }
+
+  /* Django error messages */
+  .form-error {
+    font-size: .78rem;
+    color: #dc2626;
+    margin-top: .3rem;
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+  }
+
+  /* ── Switch prompt ──────────────────────────────── */
+  .switch-prompt {
+    text-align: center;
+    font-size: .83rem;
+    color: var(--text-muted);
+    margin-top: 1.25rem;
+  }
+  .switch-prompt button {
+    background: none;
+    border: none;
+    color: var(--brand);
+    font-weight: 700;
+    cursor: pointer;
+    font-size: .83rem;
+    padding: 0;
+    font-family: 'Outfit', sans-serif;
+  }
+  .switch-prompt button:hover { text-decoration: underline; }
+
+  /* ── Responsive: stack on mobile ────────────────── */
+  @media (max-width: 767.98px) {
+    .auth-page { grid-template-columns: 1fr; }
+    .auth-left { display: none; }
+    .auth-right { padding: 2rem 1.25rem; align-items: flex-start; padding-top: 2.5rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+
+  <!-- ══ LEFT: Branding ════════════════════════════════════ -->
+  <div class="auth-left">
+    <div class="auth-left-content">
+      <a href="{% url 'home' %}" class="auth-brand">
+        <i class="bi bi-hand-index-thumb-fill"></i>Sign<span>Bridge</span>
+      </a>
+
+      <div>
+        <h2 class="auth-tagline">
+          Break the barrier.<br>
+          <span>Sign freely.</span>
+        </h2>
+        <p class="auth-sub">
+          Create an account to save your translation history, track sessions, and help improve AI accuracy through feedback.
+        </p>
+      </div>
+
+      <ul class="auth-features mt-4">
+        <li>
+          <i class="bi bi-camera-video-fill"></i>
+          Real-time sign language to voice translation
+        </li>
+        <li>
+          <i class="bi bi-clock-history"></i>
+          Full session history saved to your account
+        </li>
+        <li>
+          <i class="bi bi-bar-chart-line-fill"></i>
+          AI confidence scores and feedback loop
+        </li>
+        <li>
+          <i class="bi bi-globe2"></i>
+          ASL, BSL, KSL and more supported
+        </li>
+      </ul>
+    </div>
+
+    <p class="auth-footer-note">© 2025 SignBridge — Free to use</p>
+  </div>
+
+  <!-- ══ RIGHT: Form ════════════════════════════════════════ -->
+  <div class="auth-right">
+    <div class="auth-box">
+
+      <!-- Tab switcher -->
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab-btn active" id="tabLogin" onclick="switchTab('login')" role="tab">
+          <i class="bi bi-box-arrow-in-right"></i>Sign In
+        </button>
+        <button class="auth-tab-btn" id="tabRegister" onclick="switchTab('register')" role="tab">
+          <i class="bi bi-person-plus"></i>Register
+        </button>
+      </div>
+
+      <!-- ── LOGIN PANEL ─────────────────────────────────── -->
+      <div class="auth-panel active" id="panelLogin">
+        <h2 class="auth-panel-title">Welcome back</h2>
+        <p class="auth-panel-sub">Sign in to your SignBridge account to continue.</p>
+
+        <form method="post" action="{% url 'login' %}" id="loginForm" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="form_type" value="login"/>
+
+          <div class="form-field">
+            <label class="form-label" for="loginUsername">Username</label>
+            <div class="input-wrap">
+              <i class="bi bi-person"></i>
+              <input type="text" id="loginUsername" name="username"
+                     placeholder="Enter your username" autocomplete="username" required/>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="loginPassword">
+              Password
+              <a href="#" class="forgot-link">Forgot password?</a>
+            </label>
+            <div class="input-wrap">
+              <i class="bi bi-lock"></i>
+              <input type="password" id="loginPassword" name="password"
+                     placeholder="Enter your password" autocomplete="current-password" required/>
+              <button type="button" class="pwd-toggle" onclick="togglePwd('loginPassword', this)">
+                <i class="bi bi-eye-slash"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="check-wrap mt-1">
+            <input type="checkbox" id="rememberMe" name="remember_me"/>
+            <label for="rememberMe">Keep me signed in for 30 days</label>
+          </div>
+
+          {% if form.non_field_errors %}
+          <div class="form-error mt-2">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            {{ form.non_field_errors.0 }}
+          </div>
+          {% endif %}
+
+          <button type="submit" class="btn-auth">
+            <i class="bi bi-box-arrow-in-right"></i>Sign In
+          </button>
+        </form>
+
+        <p class="switch-prompt">
+          Don't have an account?
+          <button onclick="switchTab('register')">Create one free →</button>
+        </p>
+      </div>
+
+      <!-- ── REGISTER PANEL ──────────────────────────────── -->
+      <div class="auth-panel" id="panelRegister">
+        <h2 class="auth-panel-title">Create account</h2>
+        <p class="auth-panel-sub">Join SignBridge — free forever for basic translation.</p>
+
+        <form method="post" action="{% url 'register' %}" id="registerForm" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="form_type" value="register"/>
+
+          <div class="row g-2 mb-0">
+            <div class="col-6">
+              <div class="form-field">
+                <label class="form-label" for="regFirst">First name</label>
+                <div class="input-wrap">
+                  <i class="bi bi-person"></i>
+                  <input type="text" id="regFirst" name="first_name" placeholder="Jane" required/>
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-field">
+                <label class="form-label" for="regLast">Last name</label>
+                <div class="input-wrap">
+                  <i class="bi bi-person"></i>
+                  <input type="text" id="regLast" name="last_name" placeholder="Doe" required/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="regUsername">Username</label>
+            <div class="input-wrap">
+              <i class="bi bi-at"></i>
+              <input type="text" id="regUsername" name="username"
+                     placeholder="Choose a username" autocomplete="username" required/>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="regEmail">Email address</label>
+            <div class="input-wrap">
+              <i class="bi bi-envelope"></i>
+              <input type="email" id="regEmail" name="email"
+                     placeholder="you@example.com" autocomplete="email" required/>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="regRole">I am a…</label>
+            <div class="input-wrap">
+              <i class="bi bi-people"></i>
+              <select id="regRole" name="role" class="role-select">
+                <option value="hearing">Hearing person</option>
+                <option value="deaf">Deaf / Hard of hearing</option>
+                <option value="interpreter">Interpreter</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="regPassword">Password</label>
+            <div class="input-wrap">
+              <i class="bi bi-lock"></i>
+              <input type="password" id="regPassword" name="password1"
+                     placeholder="Create a strong password"
+                     autocomplete="new-password"
+                     oninput="updateStrength(this.value)" required/>
+              <button type="button" class="pwd-toggle" onclick="togglePwd('regPassword', this)">
+                <i class="bi bi-eye-slash"></i>
+              </button>
+            </div>
+            <div class="strength-wrap">
+              <div class="strength-track">
+                <div class="strength-bar" id="strengthBar"></div>
+              </div>
+              <span class="strength-label" id="strengthLabel">Enter a password</span>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="regPassword2">Confirm password</label>
+            <div class="input-wrap">
+              <i class="bi bi-lock-fill"></i>
+              <input type="password" id="regPassword2" name="password2"
+                     placeholder="Repeat your password"
+                     autocomplete="new-password" required/>
+              <button type="button" class="pwd-toggle" onclick="togglePwd('regPassword2', this)">
+                <i class="bi bi-eye-slash"></i>
+              </button>
+            </div>
+            <div id="pwdMatchMsg"></div>
+          </div>
+
+          <div class="check-wrap">
+            <input type="checkbox" id="agreeTerms" name="agree_terms" required/>
+            <label for="agreeTerms">
+              I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+            </label>
+          </div>
+
+          {% if register_errors %}
+          <div class="form-error mt-2">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            {{ register_errors.0 }}
+          </div>
+          {% endif %}
+
+          <button type="submit" class="btn-auth" id="regSubmitBtn">
+            <i class="bi bi-person-check-fill"></i>Create Account
+          </button>
+        </form>
+
+        <p class="switch-prompt">
+          Already have an account?
+          <button onclick="switchTab('login')">Sign in →</button>
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  /* ── Tab switching ───────────────────────── */
+  function switchTab(tab) {
+    const isLogin = tab === 'login';
+
+    document.getElementById('panelLogin').classList.toggle('active', isLogin);
+    document.getElementById('panelRegister').classList.toggle('active', !isLogin);
+    document.getElementById('tabLogin').classList.toggle('active', isLogin);
+    document.getElementById('tabRegister').classList.toggle('active', !isLogin);
+  }
+
+  /* Auto-switch if Django redirects back with register errors */
+  {% if register_errors or form_type == 'register' %}
+  switchTab('register');
+  {% endif %}
+
+  /* ── Password visibility toggle ──────────── */
+  function togglePwd(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon  = btn.querySelector('i');
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.className = 'bi bi-eye';
+    } else {
+      input.type = 'password';
+      icon.className = 'bi bi-eye-slash';
+    }
+  }
+
+  /* ── Password strength ───────────────────── */
+  function updateStrength(val) {
+    let score = 0;
+    if (val.length >= 8)                   score++;
+    if (/[A-Z]/.test(val))                 score++;
+    if (/[0-9]/.test(val))                 score++;
+    if (/[^A-Za-z0-9]/.test(val))          score++;
+    if (val.length >= 12)                  score++;
+
+    const bar   = document.getElementById('strengthBar');
+    const label = document.getElementById('strengthLabel');
+    const map   = [
+      { w: '0%',   bg: '#ef4444', txt: 'Enter a password' },
+      { w: '25%',  bg: '#ef4444', txt: 'Weak' },
+      { w: '50%',  bg: '#f59e0b', txt: 'Fair' },
+      { w: '75%',  bg: '#3b82f6', txt: 'Good' },
+      { w: '100%', bg: '#22c55e', txt: 'Strong ✓' },
+    ];
+    const s = val.length === 0 ? 0 : Math.min(score, 4);
+    bar.style.width      = map[s].w;
+    bar.style.background = map[s].bg;
+    label.textContent    = map[s].txt;
+    label.style.color    = s >= 3 ? map[s].bg : '#64748b';
+  }
+
+  /* ── Password match indicator ────────────── */
+  document.getElementById('regPassword2').addEventListener('input', function() {
+    const p1  = document.getElementById('regPassword').value;
+    const msg = document.getElementById('pwdMatchMsg');
+    if (!this.value) { msg.innerHTML = ''; return; }
+    if (this.value === p1) {
+      msg.innerHTML = '<span class="form-error" style="color:#22c55e"><i class="bi bi-check-circle-fill"></i>Passwords match</span>';
+    } else {
+      msg.innerHTML = '<span class="form-error"><i class="bi bi-x-circle-fill"></i>Passwords do not match</span>';
+    }
+  });
+</script>
+{% endblock %}
