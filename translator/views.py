@@ -103,7 +103,7 @@ def home(request):
         'total_translations': TranslationRecord.objects.count(),
         'languages': SignLanguageType.objects.filter(is_active=True),
     }
-    return render(request, 'translator/home.html', stats)
+    return render(request, 'home.html', stats)
 
 
 def translator_view(request):
@@ -123,7 +123,7 @@ def translator_view(request):
         'session': session,
         'sign_languages': sign_languages,
     }
-    return render(request, 'translator/translator.html', context)
+    return render(request, 'translator.html', context)
 
 
 @csrf_exempt
@@ -245,8 +245,8 @@ def history(request):
         user=request.user
     ).prefetch_related('records').order_by('-started_at')[:20]
 
-    return render(request, 'translator/history.html', {'sessions': sessions})
+    return render(request, 'history.html', {'sessions': sessions})
 
 
 def about(request):
-    return render(request, 'translator/about.html')
+    return render(request, 'about.html')
