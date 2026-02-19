@@ -1,90 +1,581 @@
 {% extends 'base.html' %}
 {% block title %}SignBridge — Sign Language to Voice{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* ── Hero ──────────────────────────────────────── */
+  .hero {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 5rem 0 4rem;
+    overflow: hidden;
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 60% at 60% -10%, rgba(37,99,235,.07) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 40% at 100% 80%, rgba(14,165,233,.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    background: var(--brand-subtle);
+    color: var(--brand);
+    font-size: .78rem;
+    font-weight: 600;
+    padding: .35rem .9rem;
+    border-radius: 20px;
+    border: 1px solid rgba(37,99,235,.15);
+    letter-spacing: .02em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+  .hero-badge i { font-size: .85rem; }
+  .hero-title {
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin-bottom: 1.25rem;
+  }
+  .hero-title .highlight {
+    color: var(--brand);
+    position: relative;
+  }
+  .hero-subtitle {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    max-width: 480px;
+    margin-bottom: 2rem;
+  }
+  .hero-actions { display: flex; gap: .75rem; flex-wrap: wrap; align-items: center; }
+  .hero-actions .btn {
+    padding: .75rem 1.75rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: .95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    transition: all .2s;
+  }
+  .hero-actions .btn:hover { transform: translateY(-1px); }
+
+  .hero-visual {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-shadow: var(--shadow-md);
+  }
+  .camera-mock {
+    background: #0f172a;
+    border-radius: 12px;
+    aspect-ratio: 16/9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .camera-mock::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(37,99,235,.25) 0%, transparent 70%);
+  }
+  .camera-icon-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+    color: rgba(255,255,255,.6);
+    position: relative;
+    z-index: 1;
+  }
+  .camera-icon-wrap i { font-size: 2.5rem; }
+  .camera-icon-wrap span { font-size: .8rem; letter-spacing: .05em; text-transform: uppercase; }
+  .camera-pulse {
+    position: absolute;
+    top: 12px; right: 12px;
+    width: 10px; height: 10px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,.4); }
+    50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+  }
+  .result-mock {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: .85rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+  }
+  .result-mock .sign-chip {
+    background: var(--brand-subtle);
+    color: var(--brand);
+    border-radius: 8px;
+    padding: .3rem .75rem;
+    font-weight: 700;
+    font-size: .85rem;
+    white-space: nowrap;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .result-mock .arrow { color: var(--text-muted); font-size: .9rem; }
+  .result-mock .translated { font-size: .9rem; color: var(--text); font-weight: 500; }
+  .result-mock .speaker { margin-left: auto; color: var(--brand); font-size: 1.1rem; }
+
+  /* ── Stats ─────────────────────────────────────── */
+  .stats-section {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-item { padding: 1.5rem 0; }
+  .stat-number {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--brand);
+    line-height: 1;
+    margin-bottom: .25rem;
+  }
+  .stat-label { font-size: .82rem; color: var(--text-muted); font-weight: 500; }
+  .stat-divider { border-left: 1px solid var(--border); }
+
+  /* ── How it works ───────────────────────────────── */
+  .section-label {
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--brand);
+    margin-bottom: .5rem;
+  }
+  .section-title {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: .75rem;
+  }
+  .section-subtitle {
+    color: var(--text-muted);
+    font-size: .95rem;
+    line-height: 1.7;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  .step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    height: 100%;
+    position: relative;
+    transition: box-shadow .2s, transform .2s;
+  }
+  .step-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .step-num {
+    position: absolute;
+    top: 1.25rem; right: 1.25rem;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--brand);
+    background: var(--brand-subtle);
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step-icon {
+    width: 48px; height: 48px;
+    background: var(--brand-subtle);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 1.1rem;
+    color: var(--brand);
+    font-size: 1.4rem;
+  }
+  .step-card h5 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: .6rem;
+    color: var(--text);
+  }
+  .step-card p { font-size: .875rem; color: var(--text-muted); line-height: 1.65; margin: 0; }
+
+  /* ── Features ───────────────────────────────────── */
+  .features-section { background: var(--bg); }
+  .feature-row { align-items: center; }
+  .feature-icon-lg {
+    width: 56px; height: 56px;
+    background: var(--brand-subtle);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--brand);
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+  }
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    height: 100%;
+    transition: box-shadow .2s;
+  }
+  .feature-card:hover { box-shadow: var(--shadow-md); }
+  .feature-card h6 { font-weight: 700; font-size: .95rem; margin-bottom: .4rem; }
+  .feature-card p { font-size: .85rem; color: var(--text-muted); margin: 0; line-height: 1.6; }
+
+  /* ── Languages ──────────────────────────────────── */
+  .languages-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .lang-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: .55rem 1.1rem;
+    font-size: .875rem;
+    font-weight: 600;
+    color: var(--text);
+    transition: border-color .18s, background .18s, color .18s;
+  }
+  .lang-pill:hover {
+    border-color: var(--brand);
+    background: var(--brand-subtle);
+    color: var(--brand);
+  }
+  .lang-pill .lang-code {
+    font-size: .72rem;
+    background: var(--border);
+    border-radius: 5px;
+    padding: .1rem .4rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    font-family: monospace;
+  }
+
+  /* ── CTA ────────────────────────────────────────── */
+  .cta-section {
+    background: var(--text);
+    padding: 5rem 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 70% at 80% 50%, rgba(37,99,235,.3) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .cta-section h2 {
+    color: #fff;
+    font-size: clamp(1.6rem, 3vw, 2.25rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: .75rem;
+  }
+  .cta-section p { color: #94a3b8; font-size: .975rem; margin-bottom: 2rem; }
+  .cta-section .btn {
+    padding: .85rem 2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: .95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    transition: all .2s;
+  }
+  .cta-section .btn:hover { transform: translateY(-2px); }
+</style>
+{% endblock %}
+
 {% block content %}
-<!-- Hero -->
-<section class="py-5" style="background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%); color: #fff;">
-  <div class="container text-center py-4">
-    <div style="font-size:4rem;">🤟</div>
-    <h1 class="display-4 fw-bold mt-2">SignBridge</h1>
-    <p class="lead mb-4">Real-time Sign Language → Voice Translation powered by AI.<br>
-    Breaking barriers between the hearing and signing communities.</p>
-    <a href="{% url 'translator' %}" class="btn btn-light btn-lg px-5 fw-bold shadow">
-      <i class="fa fa-camera me-2"></i>Start Translating
-    </a>
-  </div>
-</section>
 
-<!-- Stats bar -->
-<section class="py-3 bg-white border-bottom">
+<!-- ═══ HERO ═════════════════════════════════════════════════ -->
+<section class="hero">
   <div class="container">
-    <div class="row text-center g-3">
-      <div class="col-4">
-        <div class="fw-bold fs-4 text-indigo">{{ total_sessions|default:"0" }}</div>
-        <small class="text-muted">Sessions</small>
+    <div class="row align-items-center gy-5">
+      <div class="col-lg-6">
+        <div class="hero-badge">
+          <i class="bi bi-stars"></i>AI-Powered Translation
+        </div>
+        <h1 class="hero-title">
+          Sign Language,<br>
+          <span class="highlight">Spoken Aloud</span><br>
+          in Real Time
+        </h1>
+        <p class="hero-subtitle">
+          SignBridge uses your camera and Gemini AI to detect hand gestures and instantly convert sign language into speech — bridging the gap between the signing and hearing communities.
+        </p>
+        <div class="hero-actions">
+          <a href="{% url 'translator' %}" class="btn btn-brand">
+            <i class="bi bi-camera-video-fill"></i>Start Translating
+          </a>
+          <a href="{% url 'about' %}" class="btn btn-outline-brand">
+            <i class="bi bi-play-circle"></i>How it works
+          </a>
+        </div>
       </div>
-      <div class="col-4">
-        <div class="fw-bold fs-4 text-indigo">{{ total_translations|default:"0" }}</div>
-        <small class="text-muted">Translations</small>
-      </div>
-      <div class="col-4">
-        <div class="fw-bold fs-4 text-indigo">{{ languages|length }}</div>
-        <small class="text-muted">Sign Languages</small>
+
+      <div class="col-lg-5 offset-lg-1">
+        <div class="hero-visual">
+          <div class="camera-mock">
+            <div class="camera-pulse"></div>
+            <div class="camera-icon-wrap">
+              <i class="bi bi-camera-video-fill"></i>
+              <span>Live Camera</span>
+            </div>
+          </div>
+          <div class="result-mock">
+            <span class="sign-chip">Hello</span>
+            <i class="bi bi-arrow-right arrow"></i>
+            <span class="translated">Hello! How are you?</span>
+            <i class="bi bi-volume-up-fill speaker"></i>
+          </div>
+          <div class="result-mock">
+            <span class="sign-chip">Thank You</span>
+            <i class="bi bi-arrow-right arrow"></i>
+            <span class="translated">Thank you very much.</span>
+            <i class="bi bi-volume-up-fill speaker"></i>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- How it works -->
-<section class="py-5">
+<!-- ═══ STATS ════════════════════════════════════════════════ -->
+<section class="stats-section">
   <div class="container">
-    <h2 class="text-center fw-bold mb-4">How SignBridge Works</h2>
+    <div class="row text-center">
+      <div class="col-4 stat-item">
+        <div class="stat-number">{{ total_sessions|default:"0" }}</div>
+        <div class="stat-label">Sessions Run</div>
+      </div>
+      <div class="col-4 stat-item stat-divider border-start border-end">
+        <div class="stat-number">{{ total_translations|default:"0" }}</div>
+        <div class="stat-label">Signs Translated</div>
+      </div>
+      <div class="col-4 stat-item">
+        <div class="stat-number">{{ languages|length|default:"5" }}</div>
+        <div class="stat-label">Sign Languages</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═════════════════════════════════════════ -->
+<section class="py-5 py-lg-6 bg-white">
+  <div class="container">
+    <div class="text-center mb-5">
+      <p class="section-label">The Process</p>
+      <h2 class="section-title">Three Steps to Clear Communication</h2>
+      <p class="section-subtitle">From camera to speech in seconds — no special hardware required.</p>
+    </div>
+
     <div class="row g-4">
-      <div class="col-md-4">
-        <div class="card p-4 text-center h-100">
-          <div style="font-size:2.5rem">📷</div>
-          <h5 class="mt-3 fw-bold">1. Open Camera</h5>
-          <p class="text-muted">Allow access to your laptop or phone camera. Position your hands in frame.</p>
+      <div class="col-sm-6 col-lg-3">
+        <div class="step-card">
+          <span class="step-num">1</span>
+          <div class="step-icon"><i class="bi bi-camera-video"></i></div>
+          <h5>Open Camera</h5>
+          <p>Grant camera permission in your browser. Works on any laptop or mobile device — no app download needed.</p>
         </div>
       </div>
-      <div class="col-md-4">
-        <div class="card p-4 text-center h-100">
-          <div style="font-size:2.5rem">🤖</div>
-          <h5 class="mt-3 fw-bold">2. AI Detects Signs</h5>
-          <p class="text-muted">Gemini Vision AI analyzes your hand gestures in real time.</p>
+      <div class="col-sm-6 col-lg-3">
+        <div class="step-card">
+          <span class="step-num">2</span>
+          <div class="step-icon"><i class="bi bi-hand-index-thumb"></i></div>
+          <h5>Perform a Sign</h5>
+          <p>Position your hands clearly in frame and make any sign. SignBridge captures a frame every 3 seconds automatically.</p>
         </div>
       </div>
-      <div class="col-md-4">
-        <div class="card p-4 text-center h-100">
-          <div style="font-size:2.5rem">🔊</div>
-          <h5 class="mt-3 fw-bold">3. Voice Output</h5>
-          <p class="text-muted">The detected sign is translated to text and spoken aloud using text-to-speech.</p>
+      <div class="col-sm-6 col-lg-3">
+        <div class="step-card">
+          <span class="step-num">3</span>
+          <div class="step-icon"><i class="bi bi-cpu"></i></div>
+          <h5>AI Analyzes</h5>
+          <p>Google Gemini Vision AI examines the hand gesture, identifies the sign, and returns a translated phrase with a confidence score.</p>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="step-card">
+          <span class="step-num">4</span>
+          <div class="step-icon"><i class="bi bi-volume-up"></i></div>
+          <h5>Spoken Aloud</h5>
+          <p>The translated text is instantly read aloud using your device's text-to-speech engine — enabling real two-way communication.</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Supported languages -->
-{% if languages %}
-<section class="py-4 bg-white">
+<!-- ═══ FEATURES ═════════════════════════════════════════════ -->
+<section class="features-section py-5 py-lg-6">
   <div class="container">
-    <h4 class="fw-bold mb-3">Supported Sign Languages</h4>
-    <div class="d-flex flex-wrap gap-2">
-      {% for lang in languages %}
-      <span class="badge rounded-pill px-3 py-2" style="background:#4f46e5; font-size:.9rem;">
-        {{ lang.name }} ({{ lang.code }})
-      </span>
-      {% endfor %}
+    <div class="text-center mb-5">
+      <p class="section-label">Features</p>
+      <h2 class="section-title">Built for Real Conversations</h2>
+      <p class="section-subtitle">Every feature is designed to make communication smoother, faster, and more accessible.</p>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-sm-6 col-xl-4">
+        <div class="feature-card">
+          <div class="feature-icon-lg"><i class="bi bi-camera-fill"></i></div>
+          <h6>Camera-First Design</h6>
+          <p>Opens directly in the browser. No plugins, no installation. Works with laptop webcams and phone cameras equally well.</p>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-4">
+        <div class="feature-card">
+          <div class="feature-icon-lg"><i class="bi bi-lightning-fill"></i></div>
+          <h6>Real-Time Detection</h6>
+          <p>Auto-capture mode analyzes your gestures every 3 seconds. Manual capture also available for precise control.</p>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-4">
+        <div class="feature-card">
+          <div class="feature-icon-lg"><i class="bi bi-soundwave"></i></div>
+          <h6>Instant Voice Output</h6>
+          <p>Translations are spoken aloud immediately using the Web Speech API — no server round-trip needed for audio.</p>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-4">
+        <div class="feature-card">
+          <div class="feature-icon-lg"><i class="bi bi-translate"></i></div>
+          <h6>Multi-Language Support</h6>
+          <p>Supports ASL, BSL, KSL (Kenyan), AUSLAN, and International Sign, with more being added continuously.</p>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-4">
+        <div class="feature-card">
+          <div class="feature-icon-lg"><i class="bi bi-bar-chart-fill"></i></div>
+          <h6>Confidence Scoring</h6>
+          <p>Every translation shows an AI confidence percentage so you always know how reliable the result is.</p>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-4">
+        <div class="feature-card">
+          <div class="feature-icon-lg"><i class="bi bi-star-fill"></i></div>
+          <h6>Feedback Loop</h6>
+          <p>Rate translations and submit corrections. Your feedback helps improve AI accuracy for everyone.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SUPPORTED LANGUAGES ══════════════════════════════════ -->
+{% if languages %}
+<section class="languages-section py-5">
+  <div class="container">
+    <div class="row align-items-center gy-4">
+      <div class="col-lg-4">
+        <p class="section-label mb-1">Languages</p>
+        <h2 class="section-title mb-2" style="font-size:1.6rem;">Supported Sign Languages</h2>
+        <p class="text-muted" style="font-size:.875rem; line-height:1.7;">
+          Select your preferred sign language before starting a session for best AI accuracy.
+        </p>
+      </div>
+      <div class="col-lg-8">
+        <div class="d-flex flex-wrap gap-2">
+          {% for lang in languages %}
+          <a href="{% url 'translator' %}" class="lang-pill text-decoration-none">
+            <i class="bi bi-globe2" style="color:var(--brand); font-size:.85rem;"></i>
+            {{ lang.name }}
+            <span class="lang-code">{{ lang.code }}</span>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
     </div>
   </div>
 </section>
 {% endif %}
 
-<!-- CTA -->
-<section class="py-5 text-center">
-  <a href="{% url 'translator' %}" class="btn btn-brand btn-lg px-5 shadow">
-    <i class="fa fa-hands me-2"></i>Try It Now — It's Free
-  </a>
+<!-- ═══ WHY IT MATTERS ════════════════════════════════════════ -->
+<section class="py-5 py-lg-6 bg-white">
+  <div class="container">
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-5">
+        <p class="section-label">Impact</p>
+        <h2 class="section-title">Why SignBridge Matters</h2>
+        <p class="text-muted mb-4" style="font-size:.95rem; line-height:1.75;">
+          Over <strong>70 million people</strong> worldwide use sign language as their primary means of communication. Yet in most countries, professional interpreters are scarce, expensive, and unavailable 24/7.
+        </p>
+        <p class="text-muted" style="font-size:.95rem; line-height:1.75;">
+          SignBridge puts AI-powered interpretation directly in your pocket — in hospitals, schools, workplaces, and everyday conversations.
+        </p>
+      </div>
+      <div class="col-lg-6 offset-lg-1">
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="card p-3 h-100">
+              <div class="stat-number mb-1">70M+</div>
+              <p class="text-muted mb-0" style="font-size:.825rem;">People who use sign language worldwide</p>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card p-3 h-100">
+              <div class="stat-number mb-1">300+</div>
+              <p class="text-muted mb-0" style="font-size:.825rem;">Distinct sign languages across the globe</p>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card p-3 h-100">
+              <div class="stat-number mb-1">0s</div>
+              <p class="text-muted mb-0" style="font-size:.825rem;">Setup time needed — open and start</p>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card p-3 h-100">
+              <div class="stat-number mb-1">Free</div>
+              <p class="text-muted mb-0" style="font-size:.825rem;">Always free for basic use</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
+
+<!-- ═══ CTA ══════════════════════════════════════════════════ -->
+<section class="cta-section">
+  <div class="container text-center position-relative">
+    <p class="section-label" style="color:#60a5fa;">Get Started</p>
+    <h2>Ready to Break the Barrier?</h2>
+    <p>No sign-up required. Open your camera and start communicating.</p>
+    <div class="d-flex gap-3 justify-content-center flex-wrap">
+      <a href="{% url 'translator' %}" class="btn btn-light text-dark fw-bold">
+        <i class="bi bi-camera-video-fill"></i>Start Translating — Free
+      </a>
+      <a href="{% url 'about' %}" class="btn btn-outline-light">
+        <i class="bi bi-info-circle"></i>Learn More
+      </a>
+    </div>
+  </div>
+</section>
+
 {% endblock %}

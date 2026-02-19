@@ -1,34 +1,434 @@
 {% extends 'base.html' %}
 {% block title %}SignBridge — About{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Page Header ───────────────────────────────── */
+  .page-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 0 2.5rem;
+  }
+  .page-header .section-label {
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--brand);
+    margin-bottom: .5rem;
+  }
+  .page-header h1 {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin-bottom: .75rem;
+  }
+  .page-header p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.7;
+    max-width: 540px;
+  }
+
+  /* ── Section utility ───────────────────────────── */
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    margin-bottom: .25rem;
+  }
+  .card { border: 1px solid var(--border); border-radius: var(--radius); }
+
+  /* ── Mission card ──────────────────────────────── */
+  .mission-card {
+    background: var(--brand-subtle);
+    border: 1px solid rgba(37,99,235,.15);
+    border-radius: var(--radius);
+    padding: 2rem;
+  }
+  .mission-card p {
+    color: #1e3a5f;
+    font-size: .95rem;
+    line-height: 1.75;
+    margin: 0;
+  }
+  .mission-card strong { color: var(--brand); }
+
+  /* ── Stat chips ────────────────────────────────── */
+  .stat-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem .75rem;
+    text-align: center;
+  }
+  .stat-chip .num {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--brand);
+    line-height: 1;
+    margin-bottom: .3rem;
+  }
+  .stat-chip .lbl {
+    font-size: .78rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    line-height: 1.35;
+  }
+
+  /* ── Tech stack ────────────────────────────────── */
+  .tech-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    transition: border-color .18s, box-shadow .18s;
+  }
+  .tech-item:hover {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.06);
+  }
+  .tech-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--brand-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brand);
+    font-size: 1.15rem;
+    flex-shrink: 0;
+  }
+  .tech-item h6 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: .9rem;
+    color: var(--text);
+    margin-bottom: .2rem;
+  }
+  .tech-item p {
+    font-size: .825rem;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.55;
+  }
+
+  /* ── Language pills ────────────────────────────── */
+  .lang-card {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .85rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    transition: border-color .18s, background .18s;
+  }
+  .lang-card:hover {
+    border-color: var(--brand);
+    background: var(--brand-subtle);
+  }
+  .lang-card .code-badge {
+    font-family: monospace;
+    font-size: .72rem;
+    font-weight: 700;
+    background: var(--border);
+    color: var(--text-muted);
+    padding: .15rem .5rem;
+    border-radius: 5px;
+    margin-left: auto;
+    white-space: nowrap;
+  }
+  .lang-card .lang-name {
+    font-weight: 600;
+    font-size: .875rem;
+    color: var(--text);
+  }
+  .lang-card i { color: var(--brand); font-size: 1rem; flex-shrink: 0; }
+
+  /* ── Team / Values ─────────────────────────────── */
+  .value-card {
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    height: 100%;
+    transition: box-shadow .2s;
+  }
+  .value-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+  .value-icon {
+    width: 44px; height: 44px;
+    border-radius: 11px;
+    background: var(--brand-subtle);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--brand);
+    font-size: 1.2rem;
+    margin-bottom: .85rem;
+  }
+  .value-card h6 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: .95rem;
+    color: var(--text);
+    margin-bottom: .4rem;
+  }
+  .value-card p {
+    font-size: .85rem;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.65;
+  }
+
+  /* ── CTA strip ─────────────────────────────────── */
+  .cta-strip {
+    background: var(--text);
+    border-radius: var(--radius);
+    padding: 2.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-strip::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 90% 50%, rgba(37,99,235,.35) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .cta-strip h4 {
+    color: #fff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 1.2rem;
+    margin-bottom: .4rem;
+  }
+  .cta-strip p { color: #94a3b8; font-size: .875rem; margin: 0; }
+  .cta-strip .btn {
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: .9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    white-space: nowrap;
+    padding: .65rem 1.4rem;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-5" style="max-width:800px">
-  <h2 class="fw-bold mb-2"><i class="fa fa-info-circle me-2" style="color:#4f46e5"></i>About SignBridge</h2>
-  <p class="lead text-muted mb-4">Breaking communication barriers between the hearing and signing communities.</p>
 
-  <div class="card p-4 mb-4">
-    <h5 class="fw-bold">Our Mission</h5>
-    <p>An estimated <strong>70 million people</strong> worldwide use sign language as their primary means of communication. SignBridge uses cutting-edge AI vision technology to translate sign language gestures into spoken voice in real time — making everyday conversations accessible for everyone.</p>
+<!-- ═══ PAGE HEADER ══════════════════════════════════════════ -->
+<div class="page-header">
+  <div class="container" style="max-width:900px">
+    <p class="section-label"><i class="bi bi-info-circle me-1"></i>About</p>
+    <h1>About SignBridge</h1>
+    <p>Learn how SignBridge uses AI to break down communication barriers between the hearing and signing communities — and the technology that powers it.</p>
+  </div>
+</div>
+
+<div class="container py-5" style="max-width:900px">
+
+  <!-- ── Mission ───────────────────────────────────────────── -->
+  <div class="mb-5">
+    <p class="text-uppercase fw-bold mb-3" style="font-size:.72rem; letter-spacing:.1em; color:var(--text-muted);">Our Mission</p>
+    <div class="mission-card">
+      <div class="d-flex gap-3 align-items-start">
+        <div style="font-size:2rem; line-height:1; flex-shrink:0;">🤟</div>
+        <p>
+          An estimated <strong>70 million people</strong> worldwide use sign language as their primary means of communication. Yet access to interpreters remains scarce, expensive, and inconsistent — especially in hospitals, schools, and everyday settings.
+          <br><br>
+          SignBridge uses cutting-edge <strong>Gemini Vision AI</strong> to translate sign language gestures into spoken voice in real time, making everyday conversations accessible for everyone — no interpreter required.
+        </p>
+      </div>
+    </div>
   </div>
 
-  <div class="card p-4 mb-4">
-    <h5 class="fw-bold">Technology Stack</h5>
-    <ul class="list-unstyled">
-      <li class="mb-2"><i class="fa fa-check-circle text-success me-2"></i><strong>Django</strong> — robust Python web framework</li>
-      <li class="mb-2"><i class="fa fa-check-circle text-success me-2"></i><strong>Google Gemini Vision AI</strong> — multi-modal vision model for sign detection</li>
-      <li class="mb-2"><i class="fa fa-check-circle text-success me-2"></i><strong>Web Speech API</strong> — browser-native text-to-speech</li>
-      <li class="mb-2"><i class="fa fa-check-circle text-success me-2"></i><strong>MediaDevices API</strong> — cross-device camera access</li>
-    </ul>
+  <!-- ── Impact numbers ────────────────────────────────────── -->
+  <div class="mb-5">
+    <p class="text-uppercase fw-bold mb-3" style="font-size:.72rem; letter-spacing:.1em; color:var(--text-muted);">Impact by Numbers</p>
+    <div class="row g-3">
+      <div class="col-6 col-sm-3">
+        <div class="stat-chip">
+          <div class="num">70M+</div>
+          <div class="lbl">Sign language users worldwide</div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-3">
+        <div class="stat-chip">
+          <div class="num">300+</div>
+          <div class="lbl">Distinct sign languages globally</div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-3">
+        <div class="stat-chip">
+          <div class="num">0s</div>
+          <div class="lbl">Setup time — just open &amp; start</div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-3">
+        <div class="stat-chip">
+          <div class="num">Free</div>
+          <div class="lbl">No cost for basic translation</div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="card p-4 mb-4">
-    <h5 class="fw-bold">Supported Languages</h5>
-    <p>Currently SignBridge supports American Sign Language (ASL), British Sign Language (BSL), and Kenyan Sign Language (KSL), with more being added continuously through community contributions and AI training.</p>
+  <!-- ── Tech Stack ─────────────────────────────────────────── -->
+  <div class="mb-5">
+    <p class="text-uppercase fw-bold mb-3" style="font-size:.72rem; letter-spacing:.1em; color:var(--text-muted);">Technology Stack</p>
+    <div class="d-flex flex-column gap-2">
+
+      <div class="tech-item">
+        <div class="tech-icon"><i class="bi bi-layers-fill"></i></div>
+        <div>
+          <h6>Django 4.2</h6>
+          <p>Robust Python web framework powering the backend API, session management, database ORM, and admin panel.</p>
+        </div>
+      </div>
+
+      <div class="tech-item">
+        <div class="tech-icon"><i class="bi bi-cpu-fill"></i></div>
+        <div>
+          <h6>Google Gemini Vision AI</h6>
+          <p>Multi-modal large language model that analyzes hand gestures in camera frames and returns identified signs, translations, and confidence scores.</p>
+        </div>
+      </div>
+
+      <div class="tech-item">
+        <div class="tech-icon"><i class="bi bi-volume-up-fill"></i></div>
+        <div>
+          <h6>Web Speech API</h6>
+          <p>Browser-native text-to-speech engine that speaks translated text aloud instantly — no server-side audio processing needed.</p>
+        </div>
+      </div>
+
+      <div class="tech-item">
+        <div class="tech-icon"><i class="bi bi-camera-video-fill"></i></div>
+        <div>
+          <h6>MediaDevices API</h6>
+          <p>Cross-device camera access via the browser. Works with laptop webcams and smartphone cameras equally — no app installation required.</p>
+        </div>
+      </div>
+
+      <div class="tech-item">
+        <div class="tech-icon"><i class="bi bi-grid-1x2-fill"></i></div>
+        <div>
+          <h6>Bootstrap 5 + Bootstrap Icons</h6>
+          <p>Responsive UI framework ensuring SignBridge looks and works great on any screen size, from mobile to desktop.</p>
+        </div>
+      </div>
+
+    </div>
   </div>
 
-  <div class="text-center mt-4">
-    <a href="{% url 'translator' %}" class="btn btn-brand btn-lg px-5">
-      <i class="fa fa-camera me-2"></i>Try SignBridge Now
-    </a>
+  <!-- ── Supported Languages ───────────────────────────────── -->
+  <div class="mb-5">
+    <p class="text-uppercase fw-bold mb-1" style="font-size:.72rem; letter-spacing:.1em; color:var(--text-muted);">Supported Languages</p>
+    <p class="text-muted mb-3" style="font-size:.875rem;">Select your preferred sign language before each session for best AI accuracy results.</p>
+    <div class="row g-2">
+      <div class="col-sm-6">
+        <div class="lang-card">
+          <i class="bi bi-globe2"></i>
+          <span class="lang-name">American Sign Language</span>
+          <span class="code-badge">ASL</span>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="lang-card">
+          <i class="bi bi-globe2"></i>
+          <span class="lang-name">British Sign Language</span>
+          <span class="code-badge">BSL</span>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="lang-card">
+          <i class="bi bi-globe2"></i>
+          <span class="lang-name">Kenyan Sign Language</span>
+          <span class="code-badge">KSL</span>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="lang-card">
+          <i class="bi bi-globe2"></i>
+          <span class="lang-name">Australian Sign Language</span>
+          <span class="code-badge">AUSLAN</span>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="lang-card">
+          <i class="bi bi-globe2"></i>
+          <span class="lang-name">International Sign</span>
+          <span class="code-badge">IS</span>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="lang-card" style="border-style:dashed; opacity:.7;">
+          <i class="bi bi-plus-circle"></i>
+          <span class="lang-name" style="color:var(--text-muted); font-weight:500;">More coming soon</span>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <!-- ── Values ─────────────────────────────────────────────── -->
+  <div class="mb-5">
+    <p class="text-uppercase fw-bold mb-3" style="font-size:.72rem; letter-spacing:.1em; color:var(--text-muted);">Our Values</p>
+    <div class="row g-3">
+      <div class="col-sm-6 col-lg-3">
+        <div class="value-card">
+          <div class="value-icon"><i class="bi bi-universal-access"></i></div>
+          <h6>Accessibility</h6>
+          <p>Every person deserves equal access to communication, regardless of ability.</p>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="value-card">
+          <div class="value-icon"><i class="bi bi-shield-check"></i></div>
+          <h6>Privacy</h6>
+          <p>Camera frames are processed and discarded. We never store video without your consent.</p>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="value-card">
+          <div class="value-icon"><i class="bi bi-arrow-repeat"></i></div>
+          <h6>Improvement</h6>
+          <p>User feedback directly feeds into AI retraining to increase accuracy over time.</p>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="value-card">
+          <div class="value-icon"><i class="bi bi-people"></i></div>
+          <h6>Community</h6>
+          <p>Built with and for the deaf and hard-of-hearing community from the ground up.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CTA ────────────────────────────────────────────────── -->
+  <div class="cta-strip">
+    <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3 position-relative">
+      <div>
+        <h4>Ready to try SignBridge?</h4>
+        <p>No sign-up. No download. Open your camera and start communicating.</p>
+      </div>
+      <a href="{% url 'translator' %}" class="btn btn-light text-dark fw-bold flex-shrink-0">
+        <i class="bi bi-camera-video-fill"></i>Start Translating
+      </a>
+    </div>
+  </div>
+
 </div>
 {% endblock %}

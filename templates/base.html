@@ -4,57 +4,440 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>{% block title %}SignBridge{% endblock %}</title>
+
+  <!-- Bootstrap 5 + Bootstrap Icons -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet"/>
+
   <style>
+    /* ─── Design Tokens ─────────────────────────────────── */
     :root {
-      --brand: #4f46e5;
-      --brand-dark: #3730a3;
-      --accent: #06b6d4;
+      --brand:        #2563eb;
+      --brand-dark:   #1d4ed8;
+      --brand-subtle: #eff6ff;
+      --accent:       #0ea5e9;
+      --text:         #0f172a;
+      --text-muted:   #64748b;
+      --border:       #e2e8f0;
+      --surface:      #ffffff;
+      --bg:           #f8fafc;
+      --nav-h:        64px;
+      --sidebar-w:    280px;
+      --radius:       14px;
+      --shadow-sm:    0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md:    0 4px 16px rgba(0,0,0,.08);
     }
-    body { font-family: 'Segoe UI', sans-serif; background: #f8fafc; }
-    .navbar { background: var(--brand) !important; }
-    .navbar-brand { font-weight: 800; font-size: 1.5rem; letter-spacing: -0.5px; }
-    .navbar-brand span { color: var(--accent); }
-    .btn-brand { background: var(--brand); color: #fff; border: none; }
+
+    /* ─── Base ───────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1, h2, h3, h4, h5, h6, .brand-font {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* ─── Topbar ─────────────────────────────────────────── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 1030;
+      height: var(--nav-h);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 1.25rem;
+      gap: 1rem;
+    }
+
+    .topbar-brand {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.4px;
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+    }
+    .topbar-brand .brand-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--brand);
+      display: inline-block;
+    }
+    .topbar-brand span { color: var(--brand); }
+
+    /* Desktop nav links */
+    .topbar-nav {
+      display: flex;
+      align-items: center;
+      gap: .15rem;
+      margin-left: auto;
+    }
+    .topbar-nav a {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .42rem .85rem;
+      border-radius: 8px;
+      font-size: .875rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: background .18s, color .18s;
+    }
+    .topbar-nav a:hover,
+    .topbar-nav a.active {
+      background: var(--brand-subtle);
+      color: var(--brand);
+    }
+    .topbar-nav a i { font-size: 1rem; }
+
+    /* CTA button in nav */
+    .topbar-nav .btn-nav-cta {
+      background: var(--brand);
+      color: #fff !important;
+      margin-left: .4rem;
+    }
+    .topbar-nav .btn-nav-cta:hover {
+      background: var(--brand-dark) !important;
+      color: #fff !important;
+    }
+
+    /* Hamburger toggle (mobile only) */
+    .sidebar-toggle {
+      display: none;
+      background: none;
+      border: none;
+      padding: .35rem .5rem;
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .sidebar-toggle:hover { background: var(--brand-subtle); }
+    .sidebar-toggle i { font-size: 1.35rem; }
+
+    /* ─── Drawer Sidebar (mobile) ────────────────────────── */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,.35);
+      z-index: 1040;
+      opacity: 0;
+      transition: opacity .25s;
+    }
+    .sidebar-overlay.open { opacity: 1; }
+
+    .sidebar-drawer {
+      position: fixed;
+      top: 0; left: 0;
+      height: 100%;
+      width: var(--sidebar-w);
+      background: var(--surface);
+      z-index: 1050;
+      transform: translateX(-100%);
+      transition: transform .28s cubic-bezier(.4,0,.2,1);
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      box-shadow: var(--shadow-md);
+    }
+    .sidebar-drawer.open { transform: translateX(0); }
+
+    .sidebar-head {
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .sidebar-close {
+      background: none; border: none;
+      color: var(--text-muted);
+      cursor: pointer; padding: .3rem;
+      border-radius: 6px; transition: background .15s;
+    }
+    .sidebar-close:hover { background: var(--brand-subtle); color: var(--brand); }
+    .sidebar-close i { font-size: 1.25rem; }
+
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem .75rem;
+      display: flex;
+      flex-direction: column;
+      gap: .2rem;
+    }
+    .sidebar-nav a {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .75rem 1rem;
+      border-radius: 10px;
+      font-size: .95rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: background .18s, color .18s;
+    }
+    .sidebar-nav a i { font-size: 1.1rem; width: 1.25rem; text-align: center; }
+    .sidebar-nav a:hover, .sidebar-nav a.active {
+      background: var(--brand-subtle);
+      color: var(--brand);
+    }
+    .sidebar-nav .sidebar-cta {
+      background: var(--brand);
+      color: #fff !important;
+      margin-top: .4rem;
+      justify-content: center;
+    }
+    .sidebar-nav .sidebar-cta:hover { background: var(--brand-dark) !important; }
+
+    .sidebar-footer {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--border);
+      font-size: .78rem;
+      color: var(--text-muted);
+    }
+
+    /* ─── Content wrapper ────────────────────────────────── */
+    .page-body { flex: 1; }
+
+    /* ─── Cards ──────────────────────────────────────────── */
+    .card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      background: var(--surface);
+    }
+
+    /* ─── Buttons ────────────────────────────────────────── */
+    .btn-brand {
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      font-weight: 600;
+      border-radius: 10px;
+    }
     .btn-brand:hover { background: var(--brand-dark); color: #fff; }
-    footer { background: #1e1b4b; color: #a5b4fc; }
-    .card { border: none; border-radius: 16px; box-shadow: 0 2px 16px rgba(79,70,229,.08); }
+    .btn-outline-brand {
+      border: 1.5px solid var(--brand);
+      color: var(--brand);
+      background: transparent;
+      font-weight: 600;
+      border-radius: 10px;
+    }
+    .btn-outline-brand:hover { background: var(--brand); color: #fff; }
+
+    /* ─── Toast / Alerts ─────────────────────────────────── */
+    .alert-wrap { padding: .75rem 1.25rem 0; }
+
+    /* ─── Footer ─────────────────────────────────────────── */
+    footer {
+      background: var(--text);
+      color: #94a3b8;
+      padding: 2.5rem 1.25rem;
+      margin-top: auto;
+    }
+    footer .footer-brand {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      color: #fff;
+      font-size: 1.1rem;
+    }
+    footer a { color: #94a3b8; text-decoration: none; transition: color .15s; }
+    footer a:hover { color: #fff; }
+    footer .footer-divider {
+      border-color: rgba(255,255,255,.1);
+    }
+
+    /* ─── Responsive ─────────────────────────────────────── */
+    @media (max-width: 991.98px) {
+      .topbar-nav { display: none; }
+      .sidebar-toggle { display: flex; align-items: center; justify-content: center; }
+      .sidebar-overlay { display: block; }
+    }
   </style>
+
   {% block extra_css %}{% endblock %}
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark px-3">
-  <a class="navbar-brand" href="/">Sign<span>Bridge</span> 🤝</a>
-  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="nav">
-    <ul class="navbar-nav ms-auto gap-2">
-      <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fa fa-home me-1"></i>Home</a></li>
-      <li class="nav-item"><a class="nav-link" href="{% url 'translator' %}"><i class="fa fa-camera me-1"></i>Translate</a></li>
-      <li class="nav-item"><a class="nav-link" href="{% url 'history' %}"><i class="fa fa-history me-1"></i>History</a></li>
-      <li class="nav-item"><a class="nav-link" href="{% url 'about' %}"><i class="fa fa-info-circle me-1"></i>About</a></li>
-    </ul>
+  <!-- ═══ Topbar ═══════════════════════════════════════════ -->
+  <header class="topbar">
+    <!-- Mobile hamburger -->
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Open menu">
+      <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Brand -->
+    <a class="topbar-brand" href="{% url 'home' %}">
+      <i class="bi bi-hand-index-thumb-fill" style="color:var(--brand);font-size:1.3rem;"></i>
+      Sign<span>Bridge</span>
+    </a>
+
+    <!-- Desktop nav -->
+    <nav class="topbar-nav">
+      <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <i class="bi bi-house"></i>Home
+      </a>
+      <a href="{% url 'translator' %}" class="{% if request.resolver_match.url_name == 'translator' %}active{% endif %}">
+        <i class="bi bi-camera-video"></i>Translate
+      </a>
+      <a href="{% url 'history' %}" class="{% if request.resolver_match.url_name == 'history' %}active{% endif %}">
+        <i class="bi bi-clock-history"></i>History
+      </a>
+      <a href="{% url 'about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">
+        <i class="bi bi-info-circle"></i>About
+      </a>
+      <a href="{% url 'translator' %}" class="btn-nav-cta">
+        <i class="bi bi-play-circle-fill"></i>Start
+      </a>
+    </nav>
+  </header>
+
+  <!-- ═══ Sidebar Overlay ═══════════════════════════════════ -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ═══ Drawer Sidebar ════════════════════════════════════ -->
+  <aside class="sidebar-drawer" id="sidebarDrawer" aria-label="Navigation">
+    <div class="sidebar-head">
+      <a class="topbar-brand" href="{% url 'home' %}" onclick="closeSidebar()">
+        <i class="bi bi-hand-index-thumb-fill" style="color:var(--brand);font-size:1.2rem;"></i>
+        Sign<span>Bridge</span>
+      </a>
+      <button class="sidebar-close" onclick="closeSidebar()" aria-label="Close menu">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="{% url 'home' %}" onclick="closeSidebar()" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <i class="bi bi-house"></i>Home
+      </a>
+      <a href="{% url 'translator' %}" onclick="closeSidebar()" class="{% if request.resolver_match.url_name == 'translator' %}active{% endif %}">
+        <i class="bi bi-camera-video"></i>Translate
+      </a>
+      <a href="{% url 'history' %}" onclick="closeSidebar()" class="{% if request.resolver_match.url_name == 'history' %}active{% endif %}">
+        <i class="bi bi-clock-history"></i>History
+      </a>
+      <a href="{% url 'about' %}" onclick="closeSidebar()" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">
+        <i class="bi bi-info-circle"></i>About
+      </a>
+      <a href="{% url 'translator' %}" class="sidebar-cta" onclick="closeSidebar()">
+        <i class="bi bi-play-circle-fill me-1"></i>Start Translating
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <p class="mb-0">© 2025 SignBridge</p>
+      <p class="mb-0 mt-1" style="font-size:.72rem;">Powered by Gemini AI</p>
+    </div>
+  </aside>
+
+  <!-- ═══ Alerts ════════════════════════════════════════════ -->
+  {% if messages %}
+  <div class="alert-wrap">
+    {% for m in messages %}
+    <div class="alert alert-{{ m.tags }} alert-dismissible fade show mb-2" role="alert">
+      {{ m }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
   </div>
-</nav>
+  {% endif %}
 
-{% if messages %}
-<div class="container mt-2">
-  {% for m in messages %}
-  <div class="alert alert-{{ m.tags }} alert-dismissible fade show">{{ m }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-  {% endfor %}
-</div>
-{% endif %}
+  <!-- ═══ Page Content ══════════════════════════════════════ -->
+  <main class="page-body">
+    {% block content %}{% endblock %}
+  </main>
 
-{% block content %}{% endblock %}
+  <!-- ═══ Footer ════════════════════════════════════════════ -->
+  <footer>
+    <div class="container">
+      <div class="row gy-4 align-items-start">
+        <div class="col-md-4">
+          <p class="footer-brand mb-2">
+            <i class="bi bi-hand-index-thumb-fill me-1" style="color:var(--accent)"></i>SignBridge
+          </p>
+          <p style="font-size:.85rem; line-height:1.6;">
+            Real-time sign language to voice translation — making communication accessible for everyone.
+          </p>
+        </div>
+        <div class="col-6 col-md-2">
+          <p class="text-white fw-600 mb-2" style="font-size:.82rem; font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; letter-spacing:.04em; text-transform:uppercase;">Navigate</p>
+          <div class="d-flex flex-column gap-1" style="font-size:.85rem;">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'translator' %}">Translate</a>
+            <a href="{% url 'history' %}">History</a>
+            <a href="{% url 'about' %}">About</a>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <p class="text-white fw-600 mb-2" style="font-size:.82rem; font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; letter-spacing:.04em; text-transform:uppercase;">Technology</p>
+          <div class="d-flex flex-column gap-1" style="font-size:.85rem;">
+            <span>Django 4.2</span>
+            <span>Google Gemini Vision</span>
+            <span>Web Speech API</span>
+            <span>Bootstrap 5</span>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <p class="text-white fw-600 mb-2" style="font-size:.82rem; font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; letter-spacing:.04em; text-transform:uppercase;">Mission</p>
+          <p style="font-size:.85rem; line-height:1.6;">
+            Bridging communication gaps for the 70 million people worldwide who use sign language.
+          </p>
+        </div>
+      </div>
+      <hr class="footer-divider mt-4 mb-3"/>
+      <p class="mb-0 text-center" style="font-size:.82rem;">
+        © 2025 <span class="text-white fw-semibold">SignBridge</span>. Built to break barriers, one sign at a time.
+      </p>
+    </div>
+  </footer>
 
-<footer class="py-4 mt-5 text-center">
-  <p class="mb-0">© 2025 <strong class="text-white">SignBridge</strong> — Breaking barriers, one sign at a time 🌍</p>
-</footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-{% block extra_js %}{% endblock %}
+  <script>
+    const toggle   = document.getElementById('sidebarToggle');
+    const overlay  = document.getElementById('sidebarOverlay');
+    const drawer   = document.getElementById('sidebarDrawer');
+
+    function openSidebar() {
+      drawer.classList.add('open');
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeSidebar() {
+      drawer.classList.remove('open');
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    toggle.addEventListener('click', openSidebar);
+    overlay.addEventListener('click', closeSidebar);
+
+    // Close on Escape
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+  </script>
+
+  {% block extra_js %}{% endblock %}
 </body>
 </html>
