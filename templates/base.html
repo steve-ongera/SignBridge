@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}SignBridge{% endblock %}</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet"/>
+  <style>
+    :root {
+      --brand: #4f46e5;
+      --brand-dark: #3730a3;
+      --accent: #06b6d4;
+    }
+    body { font-family: 'Segoe UI', sans-serif; background: #f8fafc; }
+    .navbar { background: var(--brand) !important; }
+    .navbar-brand { font-weight: 800; font-size: 1.5rem; letter-spacing: -0.5px; }
+    .navbar-brand span { color: var(--accent); }
+    .btn-brand { background: var(--brand); color: #fff; border: none; }
+    .btn-brand:hover { background: var(--brand-dark); color: #fff; }
+    footer { background: #1e1b4b; color: #a5b4fc; }
+    .card { border: none; border-radius: 16px; box-shadow: 0 2px 16px rgba(79,70,229,.08); }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark px-3">
+  <a class="navbar-brand" href="/">Sign<span>Bridge</span> 🤝</a>
+  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="nav">
+    <ul class="navbar-nav ms-auto gap-2">
+      <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fa fa-home me-1"></i>Home</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'translator' %}"><i class="fa fa-camera me-1"></i>Translate</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'history' %}"><i class="fa fa-history me-1"></i>History</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'about' %}"><i class="fa fa-info-circle me-1"></i>About</a></li>
+    </ul>
+  </div>
+</nav>
+
+{% if messages %}
+<div class="container mt-2">
+  {% for m in messages %}
+  <div class="alert alert-{{ m.tags }} alert-dismissible fade show">{{ m }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% block content %}{% endblock %}
+
+<footer class="py-4 mt-5 text-center">
+  <p class="mb-0">© 2025 <strong class="text-white">SignBridge</strong> — Breaking barriers, one sign at a time 🌍</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

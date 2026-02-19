@@ -1,0 +1,343 @@
+{% extends 'translator/base.html' %}
+{% block title %}SignBridge — Live Translator{% endblock %}
+
+{% block extra_css %}
+<style>
+  #videoContainer {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #0f0f23;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  #video { width: 100%; border-radius: 16px; transform: scaleX(-1); }
+  #canvas { display: none; }
+  #overlay {
+    position: absolute; top: 12px; left: 12px;
+    background: rgba(0,0,0,.55); color: #fff;
+    padding: 4px 12px; border-radius: 20px; font-size: .8rem;
+  }
+  #confidence-bar { height: 6px; border-radius: 3px; transition: width .4s ease; }
+  .result-card { animation: slideIn .3s ease; }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .sign-badge {
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    color: #fff; border-radius: 12px;
+    padding: 8px 20px; font-size: 1.4rem; font-weight: 700;
+  }
+  #statusDot {
+    width: 10px; height: 10px; border-radius: 50%;
+    display: inline-block; margin-right: 6px;
+    background: #94a3b8;
+  }
+  #statusDot.active { background: #22c55e; animation: pulse 1.2s infinite; }
+  #statusDot.processing { background: #f59e0b; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; } 50% { opacity: .4; }
+  }
+  .translation-history { max-height: 320px; overflow-y: auto; }
+  .history-item {
+    border-left: 3px solid #4f46e5;
+    padding: 8px 12px; margin-bottom: 8px;
+    background: #f8fafc; border-radius: 0 8px 8px 0;
+    font-size: .9rem;
+  }
+  .star-rating button { background: none; border: none; font-size: 1.3rem; cursor: pointer; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="max-width:1200px">
+  <div class="row g-4">
+
+    <!-- Left: Camera -->
+    <div class="col-lg-7">
+      <div class="card p-3">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="fw-bold mb-0"><i class="fa fa-camera me-2" style="color:#4f46e5"></i>Live Camera</h5>
+          <div>
+            <span id="statusDot"></span>
+            <small id="statusText" class="text-muted">Camera off</small>
+          </div>
+        </div>
+
+        <!-- Language selector -->
+        <div class="mb-3">
+          <select id="langSelect" class="form-select form-select-sm" style="max-width:220px">
+            {% for lang in sign_languages %}
+            <option value="{{ lang.code }}">{{ lang.name }} ({{ lang.code }})</option>
+            {% empty %}
+            <option value="ASL">American Sign Language (ASL)</option>
+            <option value="BSL">British Sign Language (BSL)</option>
+            <option value="KSL">Kenyan Sign Language (KSL)</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div id="videoContainer">
+          <video id="video" autoplay playsinline muted></video>
+          <canvas id="canvas"></canvas>
+          <div id="overlay">Session #{{ session.pk }}</div>
+        </div>
+
+        <!-- Controls -->
+        <div class="d-flex gap-2 mt-3 flex-wrap">
+          <button id="btnStart" class="btn btn-brand px-4" onclick="startCamera()">
+            <i class="fa fa-play me-1"></i>Start Camera
+          </button>
+          <button id="btnStop" class="btn btn-outline-danger px-4 d-none" onclick="stopCamera()">
+            <i class="fa fa-stop me-1"></i>Stop
+          </button>
+          <button id="btnCapture" class="btn btn-outline-primary px-4 d-none" onclick="captureAndAnalyze()">
+            <i class="fa fa-search me-1"></i>Analyze Now
+          </button>
+          <div class="form-check form-switch mt-2 ms-1">
+            <input class="form-check-input" type="checkbox" id="autoMode" checked>
+            <label class="form-check-label" for="autoMode">Auto detect (every 3s)</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Results -->
+    <div class="col-lg-5">
+
+      <!-- Current result -->
+      <div class="card p-4 mb-3" id="resultCard">
+        <h6 class="fw-bold text-muted mb-3"><i class="fa fa-magic me-1"></i>Current Detection</h6>
+        <div class="text-center mb-3">
+          <div class="sign-badge mb-2" id="signName">—</div>
+          <p class="fs-5 fw-semibold mb-1" id="translationText">Waiting for sign...</p>
+          <small class="text-muted" id="descriptionText"></small>
+        </div>
+
+        <div class="mb-2">
+          <div class="d-flex justify-content-between mb-1">
+            <small class="text-muted">Confidence</small>
+            <small id="confidenceValue" class="fw-bold">—</small>
+          </div>
+          <div class="bg-light rounded" style="height:6px">
+            <div id="confidence-bar" class="bg-success" style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- TTS Controls -->
+        <div class="d-flex gap-2 mt-3">
+          <button id="btnSpeak" class="btn btn-sm btn-brand flex-grow-1" onclick="speakTranslation()" disabled>
+            <i class="fa fa-volume-up me-1"></i>Speak
+          </button>
+          <button id="btnFeedback" class="btn btn-sm btn-outline-secondary" onclick="toggleFeedback()" disabled>
+            <i class="fa fa-star me-1"></i>Rate
+          </button>
+        </div>
+
+        <!-- Feedback panel -->
+        <div id="feedbackPanel" class="mt-3 d-none">
+          <hr class="my-2"/>
+          <small class="text-muted">How accurate was the translation?</small>
+          <div class="star-rating mt-1" id="starRating">
+            <button onclick="setRating(1)">★</button>
+            <button onclick="setRating(2)">★</button>
+            <button onclick="setRating(3)">★</button>
+            <button onclick="setRating(4)">★</button>
+            <button onclick="setRating(5)">★</button>
+          </div>
+          <input type="text" id="correctTranslation" class="form-control form-control-sm mt-2"
+                 placeholder="Correct translation (optional)"/>
+          <button onclick="submitFeedback()" class="btn btn-sm btn-brand mt-2 w-100">Submit Feedback</button>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="card p-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="fw-bold mb-0"><i class="fa fa-list me-1"></i>Session Log</h6>
+          <button class="btn btn-sm btn-outline-secondary" onclick="clearLog()">Clear</button>
+        </div>
+        <div class="translation-history" id="translationHistory">
+          <p class="text-muted text-center small py-3">Signs will appear here...</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const SESSION_ID = {{ session.pk }};
+let stream = null;
+let autoInterval = null;
+let currentRecordId = null;
+let currentRating = 0;
+let firstItem = true;
+
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+async function startCamera() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: 640, height: 480 },
+      audio: false
+    });
+    video.srcObject = stream;
+    setStatus('active', 'Live — detecting signs');
+    document.getElementById('btnStart').classList.add('d-none');
+    document.getElementById('btnStop').classList.remove('d-none');
+    document.getElementById('btnCapture').classList.remove('d-none');
+
+    if (document.getElementById('autoMode').checked) {
+      autoInterval = setInterval(captureAndAnalyze, 3000);
+    }
+
+    document.getElementById('autoMode').addEventListener('change', function() {
+      if (this.checked) {
+        autoInterval = setInterval(captureAndAnalyze, 3000);
+      } else {
+        clearInterval(autoInterval);
+      }
+    });
+
+  } catch(e) {
+    alert('Camera access denied. Please allow camera access and try again.\n\n' + e.message);
+  }
+}
+
+function stopCamera() {
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  if (autoInterval) clearInterval(autoInterval);
+  stream = null;
+  setStatus('', 'Camera off');
+  document.getElementById('btnStart').classList.remove('d-none');
+  document.getElementById('btnStop').classList.add('d-none');
+  document.getElementById('btnCapture').classList.add('d-none');
+
+  // End session
+  fetch("{% url 'end_session' %}", {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: SESSION_ID })
+  });
+}
+
+async function captureAndAnalyze() {
+  if (!stream) return;
+  setStatus('processing', 'Analyzing...');
+
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  ctx.drawImage(video, 0, 0);
+  const frame = canvas.toDataURL('image/jpeg', 0.7);
+  const lang = document.getElementById('langSelect').value;
+
+  try {
+    const resp = await fetch("{% url 'analyze_frame' %}", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ frame, session_id: SESSION_ID, sign_language: lang })
+    });
+    const data = await resp.json();
+
+    if (data.status === 'success') {
+      displayResult(data);
+      addToHistory(data);
+      setStatus('active', 'Live — detecting signs');
+    } else {
+      setStatus('active', 'No clear sign — keep signing');
+    }
+  } catch(e) {
+    setStatus('active', 'Error — retrying...');
+  }
+}
+
+function displayResult(data) {
+  document.getElementById('signName').textContent = data.detected_sign;
+  document.getElementById('translationText').textContent = data.translated_text;
+  document.getElementById('descriptionText').textContent = data.description || '';
+  document.getElementById('confidenceValue').textContent = data.confidence_score + '%';
+
+  const bar = document.getElementById('confidence-bar');
+  bar.style.width = data.confidence_score + '%';
+  bar.className = 'rounded ' + (
+    data.confidence_score >= 80 ? 'bg-success' :
+    data.confidence_score >= 50 ? 'bg-warning' : 'bg-danger'
+  );
+  bar.style.height = '6px';
+
+  currentRecordId = data.record_id;
+  document.getElementById('btnSpeak').disabled = false;
+  document.getElementById('btnFeedback').disabled = false;
+
+  // Auto-speak
+  speakTranslation(data.translated_text);
+}
+
+function addToHistory(data) {
+  const hist = document.getElementById('translationHistory');
+  if (firstItem) { hist.innerHTML = ''; firstItem = false; }
+  const div = document.createElement('div');
+  div.className = 'history-item result-card';
+  div.innerHTML = `<strong>${data.detected_sign}</strong> → ${data.translated_text} <span class="text-muted">(${data.confidence_score}%)</span>`;
+  hist.insertBefore(div, hist.firstChild);
+}
+
+function clearLog() {
+  document.getElementById('translationHistory').innerHTML =
+    '<p class="text-muted text-center small py-3">Signs will appear here...</p>';
+  firstItem = true;
+}
+
+function speakTranslation(text) {
+  const t = text || document.getElementById('translationText').textContent;
+  if (!t || t === 'Waiting for sign...') return;
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(t);
+    utter.lang = 'en-US';
+    utter.rate = 0.95;
+    utter.pitch = 1;
+    window.speechSynthesis.speak(utter);
+  }
+}
+
+function toggleFeedback() {
+  document.getElementById('feedbackPanel').classList.toggle('d-none');
+}
+
+function setRating(n) {
+  currentRating = n;
+  const stars = document.querySelectorAll('#starRating button');
+  stars.forEach((s, i) => { s.style.color = i < n ? '#f59e0b' : '#d1d5db'; });
+}
+
+async function submitFeedback() {
+  if (!currentRecordId) return;
+  await fetch("{% url 'submit_feedback' %}", {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      record_id: currentRecordId,
+      rating: currentRating || 3,
+      correct_translation: document.getElementById('correctTranslation').value
+    })
+  });
+  document.getElementById('feedbackPanel').classList.add('d-none');
+  document.getElementById('correctTranslation').value = '';
+}
+
+function setStatus(type, text) {
+  const dot = document.getElementById('statusDot');
+  dot.className = type;
+  document.getElementById('statusText').textContent = text;
+}
+
+window.addEventListener('beforeunload', () => { if (stream) stopCamera(); });
+</script>
+{% endblock %}

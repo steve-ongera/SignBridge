@@ -1,0 +1,61 @@
+{% extends 'translator/base.html' %}
+{% block title %}SignBridge — My History{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <h2 class="fw-bold mb-4"><i class="fa fa-history me-2" style="color:#4f46e5"></i>Translation History</h2>
+
+  {% for session in sessions %}
+  <div class="card mb-4 p-4">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+      <div>
+        <h6 class="fw-bold mb-1">Session #{{ session.pk }}
+          <span class="badge ms-1
+            {% if session.status == 'completed' %}bg-success
+            {% elif session.status == 'active' %}bg-warning text-dark
+            {% else %}bg-danger{% endif %}">
+            {{ session.get_status_display }}
+          </span>
+        </h6>
+        <small class="text-muted">
+          <i class="fa fa-calendar me-1"></i>{{ session.started_at|date:"d M Y, H:i" }}
+          {% if session.sign_language %} — {{ session.sign_language.name }}{% endif %}
+        </small>
+      </div>
+      <span class="badge bg-light text-dark border">{{ session.records.count }} translations</span>
+    </div>
+
+    {% if session.records.all %}
+    <div class="mt-3">
+      {% for record in session.records.all|slice:":10" %}
+      <div class="d-flex align-items-center gap-3 py-2 border-bottom">
+        {% if record.frame_image %}
+        <img src="{{ record.frame_image.url }}" width="48" height="48"
+             style="object-fit:cover; border-radius:8px; border:2px solid #e5e7eb"/>
+        {% else %}
+        <div style="width:48px;height:48px;background:#f1f5f9;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          <i class="fa fa-hand-paper text-muted"></i>
+        </div>
+        {% endif %}
+        <div class="flex-grow-1">
+          <strong>{{ record.detected_sign }}</strong>
+          <span class="text-muted mx-1">→</span>
+          {{ record.translated_text }}
+        </div>
+        <span class="badge {% if record.confidence_score >= 0.8 %}bg-success{% elif record.confidence_score >= 0.5 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+          {{ record.confidence_score|floatformat:0 }}%… wait, {{ record.confidence_score|stringformat:".0%" }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted mt-2 mb-0 small">No translations recorded in this session.</p>
+    {% endif %}
+  </div>
+  {% empty %}
+  <div class="text-center py-5">
+    <div style="font-size:3rem">🤟</div>
+    <p class="text-muted mt-3">No sessions yet. <a href="{% url 'translator' %}">Start your first translation!</a></p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

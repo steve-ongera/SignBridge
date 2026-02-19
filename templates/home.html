@@ -1,0 +1,90 @@
+{% extends 'translator/base.html' %}
+{% block title %}SignBridge — Sign Language to Voice{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="py-5" style="background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%); color: #fff;">
+  <div class="container text-center py-4">
+    <div style="font-size:4rem;">🤟</div>
+    <h1 class="display-4 fw-bold mt-2">SignBridge</h1>
+    <p class="lead mb-4">Real-time Sign Language → Voice Translation powered by AI.<br>
+    Breaking barriers between the hearing and signing communities.</p>
+    <a href="{% url 'translator' %}" class="btn btn-light btn-lg px-5 fw-bold shadow">
+      <i class="fa fa-camera me-2"></i>Start Translating
+    </a>
+  </div>
+</section>
+
+<!-- Stats bar -->
+<section class="py-3 bg-white border-bottom">
+  <div class="container">
+    <div class="row text-center g-3">
+      <div class="col-4">
+        <div class="fw-bold fs-4 text-indigo">{{ total_sessions|default:"0" }}</div>
+        <small class="text-muted">Sessions</small>
+      </div>
+      <div class="col-4">
+        <div class="fw-bold fs-4 text-indigo">{{ total_translations|default:"0" }}</div>
+        <small class="text-muted">Translations</small>
+      </div>
+      <div class="col-4">
+        <div class="fw-bold fs-4 text-indigo">{{ languages|length }}</div>
+        <small class="text-muted">Sign Languages</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="py-5">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-4">How SignBridge Works</h2>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card p-4 text-center h-100">
+          <div style="font-size:2.5rem">📷</div>
+          <h5 class="mt-3 fw-bold">1. Open Camera</h5>
+          <p class="text-muted">Allow access to your laptop or phone camera. Position your hands in frame.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card p-4 text-center h-100">
+          <div style="font-size:2.5rem">🤖</div>
+          <h5 class="mt-3 fw-bold">2. AI Detects Signs</h5>
+          <p class="text-muted">Gemini Vision AI analyzes your hand gestures in real time.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card p-4 text-center h-100">
+          <div style="font-size:2.5rem">🔊</div>
+          <h5 class="mt-3 fw-bold">3. Voice Output</h5>
+          <p class="text-muted">The detected sign is translated to text and spoken aloud using text-to-speech.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Supported languages -->
+{% if languages %}
+<section class="py-4 bg-white">
+  <div class="container">
+    <h4 class="fw-bold mb-3">Supported Sign Languages</h4>
+    <div class="d-flex flex-wrap gap-2">
+      {% for lang in languages %}
+      <span class="badge rounded-pill px-3 py-2" style="background:#4f46e5; font-size:.9rem;">
+        {{ lang.name }} ({{ lang.code }})
+      </span>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- CTA -->
+<section class="py-5 text-center">
+  <a href="{% url 'translator' %}" class="btn btn-brand btn-lg px-5 shadow">
+    <i class="fa fa-hands me-2"></i>Try It Now — It's Free
+  </a>
+</section>
+{% endblock %}
